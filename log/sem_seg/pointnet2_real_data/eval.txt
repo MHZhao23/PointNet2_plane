@@ -1,0 +1,39 @@
+2023-08-03 00:19:10,619 - Model - INFO - PARAMETER ...
+2023-08-03 00:19:10,619 - Model - INFO - Namespace(batch_size=32, gpu='0', log_dir='pointnet2_real_data', model_epoch='31', npoint=4096, num_votes=3, split=False, train_ratio=0.7, visual=True)
+2023-08-03 00:19:10,628 - Model - INFO - using cuda:0 device.
+2023-08-03 00:19:10,628 - Model - INFO - start loading testing data ...
+2023-08-03 00:19:10,970 - Model - INFO - using 15 scene for testing.
+2023-08-03 00:19:11,386 - Model - INFO - ---- EVALUATION WHOLE SCENE----
+2023-08-03 00:19:16,800 - Model - INFO - Mean IoU of 9: 0.0869
+2023-08-03 00:19:21,580 - Model - INFO - Mean IoU of 13: 0.0903
+2023-08-03 00:19:26,449 - Model - INFO - Mean IoU of 5: 0.0956
+2023-08-03 00:19:31,446 - Model - INFO - Mean IoU of 8: 0.0945
+2023-08-03 00:19:36,333 - Model - INFO - Mean IoU of 14: 0.0923
+2023-08-03 00:19:41,119 - Model - INFO - Mean IoU of 10: 0.0901
+2023-08-03 00:19:45,903 - Model - INFO - Mean IoU of 0: 0.1184
+2023-08-03 00:19:50,755 - Model - INFO - Mean IoU of 12: 0.0987
+2023-08-03 00:19:55,534 - Model - INFO - Mean IoU of 2: 0.0903
+2023-08-03 00:20:00,165 - Model - INFO - Mean IoU of 7: 0.0929
+2023-08-03 00:20:04,757 - Model - INFO - Mean IoU of 6: 0.0877
+2023-08-03 00:20:09,359 - Model - INFO - Mean IoU of 11: 0.1184
+2023-08-03 00:20:13,978 - Model - INFO - Mean IoU of 1: 0.0987
+2023-08-03 00:20:18,772 - Model - INFO - Mean IoU of 4: 0.0876
+2023-08-03 00:20:23,601 - Model - INFO - Mean IoU of 3: 0.0923
+2023-08-03 00:20:23,648 - Model - INFO - ------- IoU --------
+class non-plane     , IoU: 0.191 
+class plane         , IoU: 0.000 
+
+2023-08-03 00:20:23,648 - Model - INFO - eval point avg class IoU: 0.095656
+2023-08-03 00:20:23,648 - Model - INFO - eval whole scene point avg class acc: 0.499809
+2023-08-03 00:20:23,648 - Model - INFO - eval whole scene point accuracy: 0.191313
+2023-08-03 00:31:15,009 - Model - INFO - PARAMETER ...
+2023-08-03 00:31:15,009 - Model - INFO - Namespace(batch_size=32, gpu='0', log_dir='pointnet2_real_data', model_epoch='31', npoint=4096, num_votes=3, split=False, train_ratio=0.7, visual=True)
+2023-08-03 00:31:15,043 - Model - INFO - using cuda:0 device.
+2023-08-03 00:31:15,043 - Model - INFO - start loading testing data ...
+2023-08-03 00:31:15,381 - Model - INFO - using 15 scene for testing.
+2023-08-03 00:31:15,775 - Model - INFO - ---- EVALUATION WHOLE SCENE----
+2023-08-03 00:31:21,233 - Model - INFO - Mean IoU of 9: 0.0869
+2023-08-03 00:31:26,187 - Model - INFO - Mean IoU of 13: 0.0903
+2023-08-03 00:31:31,107 - Model - INFO - Mean IoU of 5: 0.0956
+2023-08-03 00:31:36,042 - Model - INFO - Mean IoU of 8: 0.0945
+2023-08-03 00:31:41,046 - Model - INFO - Mean IoU of 14: 0.0923

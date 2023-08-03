@@ -1,0 +1,23 @@
+2023-07-24 16:11:56,009 - Model - INFO - PARAMETER ...
+2023-07-24 16:11:56,009 - Model - INFO - Namespace(batch_size=32, gpu='0', log_dir='pointnet2_synthetic_combined_data', npoint=4096, num_votes=3, split=False, train_ratio=0.7, visual=True)
+2023-07-24 16:11:56,036 - Model - INFO - using cuda:0 device.
+2023-07-24 16:11:56,036 - Model - INFO - start loading testing data ...
+2023-07-24 16:11:56,073 - Model - INFO - using 4 scene for testing.
+2023-07-24 16:11:56,680 - Model - INFO - ---- EVALUATION WHOLE SCENE----
+2023-07-24 16:12:01,953 - Model - INFO - Mean IoU of 2: 0.5556
+2023-07-24 16:12:08,875 - Model - INFO - Mean IoU of 0: 0.0453
+2023-07-24 16:12:09,904 - Model - INFO - Mean IoU of 3: 0.4247
+2023-07-24 16:12:15,097 - Model - INFO - Mean IoU of 1: 0.3115
+2023-07-24 16:12:15,109 - Model - INFO - ------- IoU --------
+class non-plane     , IoU: 0.089 
+class plane         , IoU: 0.398 
+
+2023-07-24 16:12:15,110 - Model - INFO - eval point avg class IoU: 0.243630
+2023-07-24 16:12:15,110 - Model - INFO - eval whole scene point avg class acc: 0.386353
+2023-07-24 16:12:15,110 - Model - INFO - eval whole scene point accuracy: 0.431472
+2023-07-24 16:15:08,362 - Model - INFO - PARAMETER ...
+2023-07-24 16:15:08,362 - Model - INFO - Namespace(batch_size=32, gpu='0', log_dir='pointnet2_synthetic_combined_data', npoint=4096, num_votes=3)
+2023-07-24 16:15:08,388 - Model - INFO - using cuda:0 device.
+2023-07-24 16:15:08,388 - Model - INFO - start loading testing data ...
+2023-07-24 16:15:08,407 - Model - INFO - using 3 scene for testing.
+2023-07-24 16:15:09,038 - Model - INFO - ---- EVALUATION WHOLE SCENE----
