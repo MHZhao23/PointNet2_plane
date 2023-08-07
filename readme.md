@@ -58,6 +58,12 @@ python test_unlabelled.py --log_dir pointnet2_synthetic_data --model_epoch 30
 python test_unlabelled.py --log_dir pointnet2_synthetic_combined_data --model_epoch 30
 ```
 
+## Testing
+Run the following command to plot figures
+'''
+python draw_results.py --exp_dir plane_seg --log_dir pointnet2_real_data
+'''
+
 ## Exporting to c++
 python export_pytorch_jit.py --log_dir pointnet2_synthetic_data
 python export_pytorch_jit.py --log_dir pointnet2_synthetic_combined_data

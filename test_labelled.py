@@ -190,7 +190,7 @@ def main(args):
 
             if args.visual:
                 plane_colors = np.array([[0.1, 0.1, 0.3]])
-                non_plane_colors = np.array([[0.8, 0.2, 0.3]])
+                non_plane_colors = np.array([[0.8, 0.5, 0.3]])
 
                 gt_pcd = o3d.geometry.PointCloud()
                 gt_pcd.points = o3d.utility.Vector3dVector(whole_scene_data)

@@ -138,19 +138,24 @@ if __name__ == "__main__":
     #     vis.destroy_window()
 
 
-    folder = "labelled"
-    epoch = 30
-    pcd = o3d.io.read_point_cloud(f"//home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_{folder}_{epoch}/1_pred.pcd")
+    # folder = "labelled"
+    # epoch = 31
+    # ids = [1, 4, 23, 42, 53, 67, 73, 83]
+    # for i in ids:
+    #     pcd = o3d.io.read_point_cloud(f"//home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_{folder}_{epoch}/{ids[0]}_pred.pcd")
+    #     o3d.visualization.draw_geometries([pcd])
+
+    #     pcd = o3d.io.read_point_cloud(f"//home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_{folder}_{epoch}/{ids[0]}_gt.pcd")
+    #     o3d.visualization.draw_geometries([pcd])
+
+    scene_id = 16
+    epoch = range(0, 60, 5)
+    pcd = o3d.io.read_point_cloud(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_training/{scene_id}_gt.pcd")
     o3d.visualization.draw_geometries([pcd])
 
-    pcd = o3d.io.read_point_cloud(f"//home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_{folder}_{epoch}/3_pred.pcd")
-    o3d.visualization.draw_geometries([pcd])
-
-    pcd = o3d.io.read_point_cloud(f"//home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_{folder}_{epoch}/4_pred.pcd")
-    o3d.visualization.draw_geometries([pcd])
-
-    pcd = o3d.io.read_point_cloud(f"//home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_{folder}_{epoch}/5_pred.pcd")
-    o3d.visualization.draw_geometries([pcd])
+    for e in epoch:
+        pcd = o3d.io.read_point_cloud(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_training/{scene_id}_epoch_{e}_pred.pcd")
+        o3d.visualization.draw_geometries([pcd])
 
     # label = np.load("/home/minghan/workspace/plane_detection_NN/PointNet2_plane/data_plane/pcd_nonplane/label/2.npy")
     # print(label.shape, label[label==1].shape)

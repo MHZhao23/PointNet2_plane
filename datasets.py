@@ -51,7 +51,7 @@ class SyntheticData(Dataset):
         model_num1 = len(cloud_files1)
         train_size1 = int(model_num1 * train_ratio1)
         indices1 = list(range(model_num1))
-        random.seed(4)
+        random.seed(42)
         random.shuffle(indices1)
         if mod == "train":
             split_indices1 = indices1[:train_size1]
@@ -90,7 +90,7 @@ class SyntheticData(Dataset):
         model_num2 = len(cloud_files2)
         train_size2 = int(model_num2 * train_ratio2)
         indices2 = list(range(model_num2))
-        random.seed(4)
+        random.seed(42)
         random.shuffle(indices2)
         if mod == "train":
             split_indices2 = indices2[:train_size2][:int(train_size2/3)]
@@ -336,7 +336,7 @@ class RealData(Dataset):
         model_num = len(cloud_files)
         train_size = int(model_num * train_ratio)
         indices = list(range(model_num))
-        random.seed(4)
+        random.seed(42)
         random.shuffle(indices)
         if mod == "train":
             split_indices = indices[:train_size]
@@ -409,6 +409,7 @@ class RealData(Dataset):
             if iter_num % 5 == 0:
                 tmp_size += self.block_size
 
+        # print(points.shape, point_idxs.size, tmp_size)
         if point_idxs.size >= self.num_point:
             selected_point_idxs = np.random.choice(point_idxs, self.num_point, replace=False)
         else:
@@ -471,10 +472,10 @@ class SceneLabelledData():
         # split data
         model_num = len(cloud_files)
         indices = list(range(model_num))
-        random.seed(4)
+        random.seed(42)
         random.shuffle(indices)
         train_size = int(model_num * train_ratio)
-        self.split_indices = indices[train_size:]
+        self.split_indices = indices[:train_size]
         print(f"loading {len(self.split_indices)} models ...")
 
         self.scene_points_num = []
@@ -524,7 +525,7 @@ class SceneLabelledData():
                 point_idxs = np.where(
                     (points[:, 0] >= s_x - self.padding) & (points[:, 0] <= e_x + self.padding) & (points[:, 1] >= s_y - self.padding) & (
                                 points[:, 1] <= e_y + self.padding))[0]
-                print(points.shape, point_idxs.size, coord_max[0] - coord_min[0], coord_max[1] - coord_min[1], grid_x, grid_y)
+                # print(points.shape, point_idxs.size, coord_max[0] - coord_min[0], coord_max[1] - coord_min[1], grid_x, grid_y)
                 if point_idxs.size == 0:
                     continue
                 num_batch = int(np.ceil(point_idxs.size / self.num_point))

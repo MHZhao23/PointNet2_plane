@@ -48,6 +48,7 @@ if __name__ == '__main__':
     plt.legend()
     plt_savepath = save_dir.joinpath(f"Mean Loss")
     plt.savefig(plt_savepath)
+    plt.show()
 
     plt.plot(list(range(1, len(train_loss_list) + 1)), train_acc_list, 'g--',label='train accuracy')
     plt.plot(list(range(1, len(train_loss_list) + 1)), test_acc_list, 'y--',label='test accuracy')
@@ -57,6 +58,7 @@ if __name__ == '__main__':
     plt.legend()
     plt_savepath = save_dir.joinpath(f"Accuracy")
     plt.savefig(plt_savepath)
+    plt.show()
 
     plt.plot(list(range(1, len(train_loss_list) + 1)), test_iou_list)
     plt.title('Average class IoU during Testing')
@@ -64,3 +66,4 @@ if __name__ == '__main__':
     plt.ylabel('IOU')
     plt_savepath = save_dir.joinpath(f"IOU")
     plt.savefig(plt_savepath)
+    plt.show()

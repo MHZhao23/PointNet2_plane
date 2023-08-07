@@ -60,10 +60,9 @@ def parse_args():
     parser.add_argument('--optimizer', type=str, default='Adam', help='Adam or SGD [default: Adam]')
     parser.add_argument('--log_dir', type=str, default=None, help='Log path [default: None]')
     parser.add_argument('--decay_rate', type=float, default=1e-4, help='weight decay [default: 1e-4]')
-    parser.add_argument('--npoint', type=int, default=4096, help='Point Number [default: 4096]')
+    parser.add_argument('--npoint', type=int, default=2048, help='Point Number [default: 4096]')
     parser.add_argument('--step_size', type=int, default=10, help='Decay step for lr decay [default: every 10 epochs]')
     parser.add_argument('--lr_decay', type=float, default=0.7, help='Decay rate for lr decay [default: 0.7]')
-    parser.add_argument('--plot', action="store_false", help='Plot the loss and accuracy figure [default: True]')
 
     return parser.parse_args()
 
@@ -327,30 +326,6 @@ def main(args):
 
             log_string('Best mIoU: %f' % best_iou)
         global_epoch += 1
-
-    if args.plot == True:
-        results_dir = experiment_dir.joinpath("results")
-        results_dir.mkdir(exist_ok=True)
-        
-        plt.plot(list(range(start_epoch, args.epoch)), train_loss_list, 'r--',label='train mean loss')
-        plt.plot(list(range(start_epoch, args.epoch)), test_loss_list, 'b--',label='test mean loss')
-        plt.title('Mean Loss during Training and Testing')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt_savepath = results_dir.joinpath(f"Mean Loss Transfer {args.transfer} with non-planes")
-        plt.savefig(plt_savepath)
-        plt.show()
-
-        plt.plot(list(range(start_epoch, args.epoch)), train_acc_list, 'g--',label='train accuracy')
-        plt.plot(list(range(start_epoch, args.epoch)), test_acc_list, 'y--',label='test accuracy')
-        plt.title('Accuracy during Training and Testing')
-        plt.xlabel('Epoch')
-        plt.ylabel('Accuracy (%)')
-        plt.legend()
-        plt_savepath = results_dir.joinpath(f"Accuracy Transfer {args.transfer} with non-planes")
-        plt.savefig(plt_savepath)
-        plt.show()
 
 if __name__ == '__main__':
     args = parse_args()
