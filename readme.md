@@ -33,8 +33,9 @@ python train_synthetic_combined_data.py  --model pointnet2_sem_seg --train_path 
 ```
 Run the following command to train a plane segmentation model with real scene
 ```
-python train_real_data.py --model pointnet2_sem_seg --datapath "./data_scene" --epoch 32 --log_dir pointnet2_real_data
+python train_real_data.py --model pointnet2_sem_seg --datapath "./data_scene/manual_data" --epoch 32 --log_dir pointnet2_real_data
 
+python train_test_real_data.py --model pointnet2_sem_seg --train_path "./data_scene/manual_data" --test_path "./data_scene/manual_testdata" --epoch 64 --log_dir pointnet2_real_data
 ```
 
 If the model is trained from scratch, add one argument ```--transfer```, for example
@@ -46,14 +47,14 @@ python train_synthetic_data.py --model pointnet2_sem_seg --datapath1 "./data_syn
 ## Testing
 Run the following command to test the model with the labelled whole scene
 ```
-python test_labelled.py --log_dir pointnet2_real_data --visual --model_epoch 30
+python test_labelled.py --log_dir pointnet2_real_data --test_path "./data_scene/manual_testdata" --visual --model_epoch 30
 python test_labelled.py --log_dir pointnet2_synthetic_data --visual --model_epoch 30
 python test_labelled.py --log_dir pointnet2_synthetic_combined_data --visual --model_epoch 30
 ```
 
 Run the following command to test the model with the unlabelled whole scene
 ```
-python test_unlabelled.py --log_dir pointnet2_real_data --model_epoch 30
+python test_unlabelled.py --log_dir pointnet2_real_data --test_path "./data_scene/manual_testdata" --model_epoch 63
 python test_unlabelled.py --log_dir pointnet2_synthetic_data --model_epoch 30
 python test_unlabelled.py --log_dir pointnet2_synthetic_combined_data --model_epoch 30
 ```

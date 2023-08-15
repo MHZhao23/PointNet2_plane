@@ -57,86 +57,35 @@ if __name__ == "__main__":
     # print(t4-t3, t3-t2, t2-t1, t1-t0)
 
     # ## -------------- show pcd --------------
-    # xyz = np.load("./data_plane/test/22.npy", allow_pickle=True)
-    # pcd = o3d.geometry.PointCloud()
-    # pcd.points = o3d.utility.Vector3dVector(xyz.item()['data'])
-    # o3d.visualization.draw_geometries([pcd])
-
     # folder = "unlabelled"
-    # epoch = 23
-    # exp_folder = "pointnet2_real_data"
+    # epoch = 63
+    # exp_folder = "pointnet2_real_data_0815"
     # root_folder = f"eval_{folder}_{epoch}"
     # root_path = os.path.join(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/", root_folder)
-    # save_path = os.path.join(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/", "pcd_visual")
-    # # shutil.rmtree(save_path)
-    # # os.mkdir(save_path)
     # file_list = sorted(os.listdir(root_path))
     # predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
     # for i in range(len(predpcd_file)):
     #     pcd_f = predpcd_file[i]
     #     pcd = o3d.io.read_point_cloud(pcd_f)
-    #     vis = o3d.visualization.Visualizer()
-    #     vis.create_window(visible=True) #works for me with False, on some systems needs to be true
-    #     vis.add_geometry(pcd)
-    #     vis.poll_events()
-    #     vis.update_renderer()
-    #     vis.capture_screen_image(os.path.join(save_path, f"eval_{folder}_epoch{epoch}_{i}.png"))
-    #     vis.destroy_window()
+    #     o3d.visualization.draw_geometries([pcd])
+
 
     # folder = "labelled"
-    # epoch = 15
-    # exp_folder = "pointnet2_synthetic_data"
+    # epoch = 63
+    # exp_folder = "pointnet2_real_data_0815"
     # root_folder = f"eval_{folder}_{epoch}"
     # root_path = os.path.join(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/", root_folder)
     # file_list = sorted(os.listdir(root_path))
+    # gtpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("gt.pcd")]
     # predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
     # for i in range(len(predpcd_file)):
+    #     pcd_f = gtpcd_file[i]
+    #     pcd = o3d.io.read_point_cloud(pcd_f)
+    #     o3d.visualization.draw_geometries([pcd])
+
     #     pcd_f = predpcd_file[i]
     #     pcd = o3d.io.read_point_cloud(pcd_f)
-    #     vis = o3d.visualization.Visualizer()
-    #     vis.create_window(visible=True) #works for me with False, on some systems needs to be true
-    #     vis.add_geometry(pcd)
-    #     vis.poll_events()
-    #     vis.update_renderer()
-    #     vis.capture_screen_image(os.path.join(save_path, f"eval_{folder}_epoch{epoch}_{i}.png"))
-    #     vis.destroy_window()
-
-    # folder = "unlabelled"
-    # epoch = 30
-    # exp_folder = "pointnet2_synthetic_data"
-    # root_folder = f"eval_{folder}_{epoch}"
-    # root_path = os.path.join(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/", root_folder)
-    # file_list = sorted(os.listdir(root_path))
-    # predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
-    # for i in range(len(predpcd_file)):
-    #     pcd_f = predpcd_file[i]
-    #     pcd = o3d.io.read_point_cloud(pcd_f)
-    #     vis = o3d.visualization.Visualizer()
-    #     vis.create_window(visible=True) #works for me with False, on some systems needs to be true
-    #     vis.add_geometry(pcd)
-    #     vis.poll_events()
-    #     vis.update_renderer()
-    #     vis.capture_screen_image(os.path.join(save_path, f"eval_{folder}_epoch{epoch}_{i}.png"))
-    #     vis.destroy_window()
-
-    # folder = "labelled"
-    # epoch = 30
-    # exp_folder = "pointnet2_real_data"
-    # root_folder = f"eval_{folder}_{epoch}"
-    # root_path = os.path.join(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/", root_folder)
-    # file_list = sorted(os.listdir(root_path))
-    # predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
-    # for i in range(len(predpcd_file)):
-    #     pcd_f = predpcd_file[i]
-    #     pcd = o3d.io.read_point_cloud(pcd_f)
-    #     vis = o3d.visualization.Visualizer()
-    #     vis.create_window(visible=True) #works for me with False, on some systems needs to be true
-    #     vis.add_geometry(pcd)
-    #     vis.poll_events()
-    #     vis.update_renderer()
-    #     vis.capture_screen_image(os.path.join(save_path, f"eval_{folder}_epoch{epoch}_{i}.png"))
-    #     vis.destroy_window()
-
+    #     o3d.visualization.draw_geometries([pcd])
 
     # folder = "labelled"
     # epoch = 31
@@ -148,25 +97,88 @@ if __name__ == "__main__":
     #     pcd = o3d.io.read_point_cloud(f"//home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_{folder}_{epoch}/{ids[0]}_gt.pcd")
     #     o3d.visualization.draw_geometries([pcd])
 
-    scene_id = 16
-    epoch = range(0, 60, 5)
-    pcd = o3d.io.read_point_cloud(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_training/{scene_id}_gt.pcd")
-    o3d.visualization.draw_geometries([pcd])
-
-    for e in epoch:
-        pcd = o3d.io.read_point_cloud(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_training/{scene_id}_epoch_{e}_pred.pcd")
-        o3d.visualization.draw_geometries([pcd])
-
-    # label = np.load("/home/minghan/workspace/plane_detection_NN/PointNet2_plane/data_plane/pcd_nonplane/label/2.npy")
-    # print(label.shape, label[label==1].shape)
-
-    # # loading data
-    # rootpath = "./data_plane/pcd_data/pcd_noise"
-    # cloud_filename = sorted(os.listdir(rootpath))
-    # cloud_files = [os.path.join(rootpath, filename) for filename in cloud_filename]
-    # i = 1313
-    # pcd = o3d.io.read_point_cloud(cloud_files[i])
+    # scene_id = 0
+    # exp_folder = "pointnet2_real_data_0813"
+    # epoch = range(0, 60, 5)
+    # save_path = f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/eval_training"
+    # pcd = o3d.io.read_point_cloud(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/eval_training/{scene_id}_gt.pcd")
     # o3d.visualization.draw_geometries([pcd])
+    # pcd_f = f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/eval_training/{scene_id}_gt.pcd"
+    # pcd = o3d.io.read_point_cloud(pcd_f)
+
+    # for e in epoch:
+    #     pcd = o3d.io.read_point_cloud(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/eval_training/{scene_id}_epoch_{e}_pred.pcd")
+    #     o3d.visualization.draw_geometries([pcd])
+
+    # TODO: Compare the results
+    rootpath = "./data_scene/results"
+    label_path = os.path.join(rootpath, "gt")
+    label_filename = sorted(os.listdir(label_path))
+    label_files = [os.path.join(label_path, filename) for filename in label_filename]
+
+    pointnet2_path = os.path.join(rootpath, "pointnet2")
+    pointnet2_filename = sorted(os.listdir(pointnet2_path))
+    pointnet2_files = [os.path.join(pointnet2_path, filename) for filename in pointnet2_filename]
+
+    ori_path = os.path.join(rootpath, "ori")
+    ori_filename = sorted(os.listdir(ori_path))
+    ori_files = [os.path.join(ori_path, filename) for filename in ori_filename]
+
+    assert len(label_files) == len(pointnet2_files) == len(ori_files)
+    
+    total_num = 0
+    pointnet2_correct = 0
+    ori_correct = 0
+
+    num_class = [0, 0]
+    pointnet2_correct_class = [0, 0]
+    pointnet2_deno_class = [0, 0]
+    ori_correct_class = [0, 0]
+    ori_deno_class = [0, 0]
+    for i in range(len(label_files)):
+        labels = np.load(label_files[i])
+        total_num += labels.shape[0]
+        num_class[0] += np.sum((labels == 0))
+        num_class[1] += np.sum((labels == 1))
+
+        pointnet2_pred = np.load(pointnet2_files[i])
+        pointnet2_correct += (pointnet2_pred == labels).sum()
+        pointnet2_correct_class[0] += np.sum((pointnet2_pred == 0) & (labels == 0))
+        pointnet2_correct_class[1] += np.sum((pointnet2_pred == 1) & (labels == 1))
+        pointnet2_deno_class[0] += np.sum((pointnet2_pred == 0) | (labels == 0))
+        pointnet2_deno_class[1] += np.sum((pointnet2_pred == 1) | (labels == 1))
+
+        with open(ori_files[i]) as f:
+            lines = f.readlines()
+        l_labels = [int(l[0]) if int(l[0]) == 0 else 1 for l in lines]
+        ori_pred = np.asarray(l_labels)
+        ori_correct += (ori_pred == labels).sum()
+        ori_correct_class[0] += np.sum((ori_pred == 0) & (labels == 0))
+        ori_correct_class[1] += np.sum((ori_pred == 1) & (labels == 1))
+        ori_deno_class[0] += np.sum((ori_pred == 0) | (labels == 0))
+        ori_deno_class[1] += np.sum((ori_pred == 1) | (labels == 1))
+
+    pointnet2_acc = (pointnet2_correct / total_num) * 100
+    ori_acc = (ori_correct / total_num) * 100
+    print('\n')
+    print(f'pointnet2 accuracy: {round(pointnet2_acc, 1)}%')
+    print(f'ori accuracy: {(round(ori_acc, 1))}%')
+
+    print('\n')
+    print(f'pointnet2 non-plane accuracy: {round((pointnet2_correct_class[0] / num_class[0]) * 100, 1)}%')
+    print(f'ori non-plane accuracy: {(round((ori_correct_class[0] / num_class[0]) * 100, 1))}%')
+
+    print('\n')
+    print(f'pointnet2 plane accuracy: {round((pointnet2_correct_class[1] / num_class[1]) * 100, 1)}%')
+    print(f'ori plane accuracy: {(round((ori_correct_class[1] / num_class[1]) * 100, 1))}%')
+
+    print('\n')
+    print(f'pointnet2 non-plane IOU: {round((pointnet2_correct_class[0] / pointnet2_deno_class[0]) * 100, 1)}%')
+    print(f'ori non-plane IOU: {(round((ori_correct_class[0] / ori_deno_class[0]) * 100, 1))}%')
+
+    print('\n')
+    print(f'pointnet2 plane IOU: {round((pointnet2_correct_class[1] / pointnet2_deno_class[1]) * 100, 1)}%')
+    print(f'ori plane IOU: {(round((ori_correct_class[1] / ori_deno_class[1]) * 100, 1))}%')
 
     # # # TODO: visualize with different colours
     # rootpath = "./data_plane/rawDataNonPlane"
@@ -235,9 +247,15 @@ if __name__ == "__main__":
     # print(f"non-plane is {round(gt_nonplane_num * 100 / (gt_plane_num + gt_nonplane_num), 2)}% of gt label")
 
     # # TODO: compute the percentage of planes and non-planes (pred with dataset 2)
-    # pred_label_path = "./log/sem_seg/pointnet2_with_nonplanes/visual"
-    # pred_label_filename = sorted(os.listdir(pred_label_path))
-    # pred_label_files = [os.path.join(pred_label_path, filename) for filename in pred_label_filename if filename.endswith("pred.npy")]
+    # folder = "labelled"
+    # epoch = 36
+    # exp_folder = "pointnet2_real_data_0807"
+    # root_folder = f"eval_{folder}_{epoch}"
+    # root_path = os.path.join(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/", root_folder)
+    # file_list = sorted(os.listdir(root_path))
+    # pred_label_files = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.npy")]
+    # # gtpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("gt.pcd")]
+    # # predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
 
     # pred_plane_num = 0
     # pred_nonplane_num = 0
@@ -248,7 +266,6 @@ if __name__ == "__main__":
     #     pred_nonplane_num += pred_labels[pred_labels == 0].shape[0]
     # print(f"plane is {round(pred_plane_num * 100 / (pred_plane_num + pred_nonplane_num), 2)}% of pred label")
     # print(f"non-plane is {round(pred_nonplane_num * 100 / (pred_plane_num + pred_nonplane_num), 2)}% of pred label")
-
 
     # # TODO: build new scene
     # rootpath1 = "./data_synthetic/pcd_plane"

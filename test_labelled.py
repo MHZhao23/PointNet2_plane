@@ -33,13 +33,14 @@ for i, cat in enumerate(seg_classes.keys()):
 def parse_args():
     '''PARAMETERS'''
     parser = argparse.ArgumentParser('Model')
-    parser.add_argument('--batch_size', type=int, default=32, help='batch size in testing [default: 32]')
+    parser.add_argument('--test_path', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
+    parser.add_argument('--batch_size', type=int, default=256, help='batch size in testing [default: 32]')
     parser.add_argument('--gpu', type=str, default='0', help='specify gpu device')
-    parser.add_argument('--npoint', type=int, default=4096, help='point number [default: 4096]')
+    parser.add_argument('--npoint', type=int, default=256, help='point number [default: 4096]')
+    parser.add_argument('--block_size', type=float, default=0.1, help='Point Number [default: 4096]')
     parser.add_argument('--log_dir', type=str, required=True, help='experiment root')
     parser.add_argument('--visual', action='store_true', default=False, help='visualize result [default: False]')
     parser.add_argument('--num_votes', type=int, default=3, help='aggregate segmentation scores with voting [default: 5]')
-    parser.add_argument('--train_ratio', default=0.7, type=float, help='Ratio of train set [default: 0.7]')
     parser.add_argument('--model_epoch', type=str, default=None, help='Besy model choice [default: None]')
     return parser.parse_args()
 
@@ -81,17 +82,16 @@ def main(args):
     log_string(args)
 
     '''HYPER PARAMETER'''
-    rootpath = "./data_scene"
     num_classes = 2
     num_points = args.npoint
+    block_size = args.block_size
     batch_size = args.batch_size
-    train_ratio = args.train_ratio
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     log_string("using {} device.".format(device))
 
     '''DATASET LOADING'''
     log_string("start loading testing data ...")
-    test_scene_set = SceneLabelledData(rootpath, num_classes, num_points)
+    test_scene_set = SceneLabelledData(args.test_path, num_classes, num_points, block_size)
     log_string("using {} scene for testing.".format(test_scene_set.__len__()))
 
     '''MODEL LOADING'''
@@ -106,7 +106,7 @@ def main(args):
     classifier = classifier.eval()
 
     with torch.no_grad():
-        scene_id = test_scene_set.split_indices
+        scene_id = test_scene_set.indices
         num_batches = len(test_scene_set)
 
         total_seen_class = [0 for _ in range(num_classes)]
@@ -116,7 +116,9 @@ def main(args):
         log_string('---- EVALUATION WHOLE SCENE----')
 
         for batch_idx in range(num_batches):
-            print("Inference [%d/%d] %s ..." % (batch_idx + 1, num_batches, str(scene_id[batch_idx])))
+            scene_idex = scene_id[batch_idx]
+            scene_name = test_scene_set.cloud_filename[scene_idex][:-4]
+            print("Inference [%d/%d] %s %s ..." % (batch_idx + 1, num_batches, str(scene_idex), scene_name))
             total_seen_class_tmp = [0 for _ in range(num_classes)]
             total_correct_class_tmp = [0 for _ in range(num_classes)]
             total_iou_deno_class_tmp = [0 for _ in range(num_classes)]
@@ -164,33 +166,17 @@ def main(args):
                 total_iou_deno_class[l] += total_iou_deno_class_tmp[l]
 
             iou_map = np.array(total_correct_class_tmp) / (np.array(total_iou_deno_class_tmp, dtype=np.float64) + 1e-6)
-            print(iou_map)
             arr = np.array(total_seen_class_tmp)
             tmp_iou = np.mean(iou_map[arr != 0])
-            log_string('Mean IoU of %s: %.4f' % (str(scene_id[batch_idx]), tmp_iou))
+            log_string('Mean IoU of %s: %.4f' % (scene_name, tmp_iou))
             print('----------------------------')
 
-            label_filename = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_gt.npy')
-            np.save(label_filename, whole_scene_label)
-
-            pred_filename = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_pred.npy')
+            pred_filename = os.path.join(visual_dir, scene_name + '.npy')
             np.save(pred_filename, pred_label)
 
-            label_txt_filename = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_gt.txt')
-            with open(label_txt_filename, 'w') as pl_save:
-                for i in whole_scene_label:
-                    pl_save.write(str(int(i)) + '\n')
-                pl_save.close()
-
-            pred_txt_filename = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_pred.txt')
-            with open(pred_txt_filename, 'w') as pl_save:
-                for i in pred_label:
-                    pl_save.write(str(int(i)) + '\n')
-                pl_save.close()
-
             if args.visual:
-                plane_colors = np.array([[0.1, 0.1, 0.3]])
-                non_plane_colors = np.array([[0.8, 0.5, 0.3]])
+                plane_colors = np.array([[51/255.0, 160/255.0, 44/255.0]])
+                non_plane_colors = np.array([[166/255.0, 206/255.0, 227/255.0]])
 
                 gt_pcd = o3d.geometry.PointCloud()
                 gt_pcd.points = o3d.utility.Vector3dVector(whole_scene_data)
@@ -200,7 +186,7 @@ def main(args):
                 gt_colors[whole_scene_label==1] = plane_colors
                 gt_pcd.colors = o3d.Vector3dVector(gt_colors)
                 # save the point cloud
-                pcd_path = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_gt.pcd')
+                pcd_path = os.path.join(visual_dir, scene_name + '_gt.pcd')
                 o3d.io.write_point_cloud(pcd_path, gt_pcd)
 
                 pred_pcd = o3d.geometry.PointCloud()
@@ -211,7 +197,7 @@ def main(args):
                 pred_colors[pred_label==1] = plane_colors
                 pred_pcd.colors = o3d.Vector3dVector(pred_colors)
                 # save the point cloud
-                pcd_path = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_pred.pcd')
+                pcd_path = os.path.join(visual_dir, scene_name + '_pred.pcd')
                 o3d.io.write_point_cloud(pcd_path, pred_pcd)
 
         IoU = np.array(total_correct_class) / (np.array(total_iou_deno_class, dtype=np.float64) + 1e-6)

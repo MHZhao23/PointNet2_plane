@@ -60,9 +60,9 @@ def add_vote(vote_label_pool, point_idx, pred_label, weight):
 def parse_args():
     parser = argparse.ArgumentParser('Model')
     parser.add_argument('--model', type=str, default='pointnet2_sem_seg', help='Model name [default: pointnet2_sem_seg]')
-    parser.add_argument('--datapath', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
-    parser.add_argument('--batch_size', type=int, default=16, help='Batch Size during training [default: 16]')
-    parser.add_argument('--train_ratio', default=0.7, type=float, help='Ratio of train set [default: 0.7]')
+    parser.add_argument('--train_path', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
+    parser.add_argument('--test_path', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
+    parser.add_argument('--batch_size', type=int, default=256, help='Batch Size during training [default: 16]')
     parser.add_argument('--epoch', default=32, type=int, help='Epoch to run [default: 32]')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='Initial learning rate [default: 0.001]')
     parser.add_argument('--gpu', type=str, default='0', help='GPU to use [default: GPU 0]')
@@ -70,7 +70,8 @@ def parse_args():
     parser.add_argument('--optimizer', type=str, default='Adam', help='Adam or SGD [default: Adam]')
     parser.add_argument('--log_dir', type=str, default=None, help='Log path [default: None]')
     parser.add_argument('--decay_rate', type=float, default=1e-4, help='weight decay [default: 1e-4]')
-    parser.add_argument('--npoint', type=int, default=2048, help='Point Number [default: 4096]')
+    parser.add_argument('--npoint', type=int, default=256, help='Point Number [default: 4096]')
+    parser.add_argument('--block_size', type=float, default=0.1, help='Point Number [default: 4096]')
     parser.add_argument('--step_size', type=int, default=10, help='Decay step for lr decay [default: every 10 epochs]')
     parser.add_argument('--lr_decay', type=float, default=0.7, help='Decay rate for lr decay [default: 0.7]')
 
@@ -119,12 +120,11 @@ def main(args):
     log_string(args)
 
     '''HYPER PARAMETER'''
-    rootpath = args.datapath
     num_classes = 2
     num_points = args.npoint
+    block_size = args.block_size
     batch_size = args.batch_size
     lr_net = args.learning_rate
-    train_ratio = args.train_ratio
     epochs = args.epoch
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     log_string("using {} device.".format(device))
@@ -132,7 +132,7 @@ def main(args):
     '''DATASET LOADING'''
     log_string('\n\n>>>>>>>> DATASET LOADING <<<<<<<<')
     log_string("start loading training data ...")
-    train_set = RealData(rootpath, num_classes, num_points, train_ratio, "train")
+    train_set = RealData(args.train_path, num_classes, num_points, block_size)
     train_loader = DataLoader(train_set,
                               batch_size=batch_size,
                               shuffle=True,
@@ -143,7 +143,7 @@ def main(args):
     weights = torch.Tensor(train_set.labelweights).to(device)
 
     log_string("\nstart loading testing data ...")
-    test_set = RealData(rootpath, num_classes, num_points, train_ratio, "test")
+    test_set = RealData(args.test_path, num_classes, num_points, block_size)
     test_loader = DataLoader(test_set,
                               batch_size=batch_size,
                               shuffle=False,
@@ -153,7 +153,7 @@ def main(args):
     log_string("using {} samples for testing.".format(test_set.__len__()))
 
     log_string("\nstart loading whole scene testing data ...")
-    test_scene_set = SceneLabelledData(rootpath, num_classes, num_points)
+    test_scene_set = SceneLabelledData(args.test_path, num_classes, num_points, block_size)
     log_string("using {} scene for testing.".format(test_scene_set.__len__()))
 
     '''MODEL LOADING'''
@@ -227,6 +227,8 @@ def main(args):
         num_batches = len(train_loader)
         total_correct = 0
         total_seen = 0
+        total_plane = 0
+        total_nonplane = 0
         loss_sum = 0
         classifier = classifier.train()
 
@@ -249,10 +251,15 @@ def main(args):
             optimizer.step()
 
             pred_choice = seg_pred.cpu().data.max(1)[1].numpy()
+            plane_num = np.sum(pred_choice == 1)
+            nonplane_num = np.sum(pred_choice == 0)
+            total_plane += plane_num
+            total_nonplane += nonplane_num
             correct = np.sum(pred_choice == batch_label)
             total_correct += correct
             total_seen += (batch_size * num_points)
             loss_sum += loss
+        log_string('Plane: %d, %f; Non-plane: %d, %f;' % (total_plane, total_plane/(total_plane+total_nonplane), total_nonplane, total_nonplane/(total_plane+total_nonplane)))
         log_string('Training mean loss: %f' % (loss_sum / num_batches))
         log_string('Training accuracy: %f' % (total_correct / float(total_seen)))
         train_loss_list.append((loss_sum / num_batches).cpu().detach().numpy())
@@ -275,6 +282,8 @@ def main(args):
             num_batches = len(test_loader)
             total_correct = 0
             total_seen = 0
+            total_plane = 0
+            total_nonplane = 0
             loss_sum = 0
             labelweights = np.zeros(num_classes)
             total_seen_class = [0 for _ in range(num_classes)]
@@ -298,6 +307,10 @@ def main(args):
                 loss = criterion(seg_pred, target, trans_feat, weights)
                 loss_sum += loss
                 pred_val = np.argmax(pred_val, 2)
+                plane_num = np.sum(pred_val == 1)
+                nonplane_num = np.sum(pred_val == 0)
+                total_plane += plane_num
+                total_nonplane += nonplane_num
                 correct = np.sum((pred_val == batch_label))
                 total_correct += correct
                 total_seen += (batch_size * num_points)
@@ -310,17 +323,20 @@ def main(args):
                     total_iou_deno_class[l] += np.sum(((pred_val == l) | (batch_label == l)))
 
             labelweights = labelweights.astype(np.float32) / np.sum(labelweights.astype(np.float32))
-            mIoU = np.mean(np.array(total_correct_class) / (np.array(total_iou_deno_class, dtype=np.float64) + 1e-6))
+            class_IoU = np.array(total_correct_class) / (np.array(total_iou_deno_class, dtype=np.float64) + 1e-6)
+            mIoU = np.sum(labelweights * class_IoU)
+            class_acc = np.array(total_correct_class) / (np.array(total_seen_class, dtype=np.float64) + 1e-6)
+            macc = np.sum(labelweights * class_acc)
+            log_string('Plane: %d, %f; Non-plane: %d, %f;' % (total_plane, total_plane/(total_plane+total_nonplane), total_nonplane, total_nonplane/(total_plane+total_nonplane)))
             log_string('eval mean loss: %f' % (loss_sum / float(num_batches)))
             log_string('eval point avg class IoU: %f' % (mIoU))
             log_string('eval point accuracy: %f' % (total_correct / float(total_seen)))
-            log_string('eval point avg class acc: %f' % (
-                np.mean(np.array(total_correct_class) / (np.array(total_seen_class, dtype=np.float64) + 1e-6))))
+            log_string('eval point avg class acc: %f' % (macc))
 
             iou_per_class_str = '------- IoU --------\n'
             for l in range(num_classes):
                 iou_per_class_str += 'class %s weight: %.3f, IoU: %.3f \n' % (
-                    seg_label_to_cat[l] + ' ' * (14 - len(seg_label_to_cat[l])), labelweights[l - 1],
+                    seg_label_to_cat[l] + ' ' * (14 - len(seg_label_to_cat[l])), labelweights[l],
                     total_correct_class[l] / float(total_iou_deno_class[l]))
 
             log_string(iou_per_class_str)
@@ -347,8 +363,10 @@ def main(args):
 
             ###
             if epoch % 5 == 0:
-                scene_id = test_scene_set.split_indices
-                batch_idxs = list(range(10))
+                total_plane = 0
+                total_nonplane = 0
+                scene_id = test_scene_set.indices
+                batch_idxs = list(range(6))
                 log_string('---- EVALUATION WHOLE SCENE----')
                 for batch_idx in batch_idxs:
                     print("Inference [%d/%d] %s ..." % (batch_idx + 1, len(batch_idxs), str(scene_id[batch_idx])))
@@ -389,12 +407,17 @@ def main(args):
                                                     batch_smpw[0:real_batch_size, ...])
 
                     pred_label = np.argmax(vote_label_pool, 1)
-                    plane_colors = np.array([[0.1, 0.1, 0.3]])
-                    non_plane_colors = np.array([[0.8, 0.5, 0.3]])
+                    plane_num = np.sum(pred_label == 1)
+                    nonplane_num = np.sum(pred_label == 0)
+                    total_plane += plane_num
+                    total_nonplane += nonplane_num
+                    log_string('Plane: %d, %f; Non-plane: %d, %f;' % (total_plane, total_plane/(total_plane+total_nonplane), total_nonplane, total_nonplane/(total_plane+total_nonplane)))
 
                     gt_pcd = o3d.geometry.PointCloud()
                     gt_pcd.points = o3d.utility.Vector3dVector(whole_scene_data)
                     points_num = whole_scene_data.shape[0]
+                    plane_colors = np.array([[0.1, 0.1, 0.3]])
+                    non_plane_colors = np.array([[0.8, 0.5, 0.3]])
                     # paint the gt point cloud
                     gt_colors = np.repeat(non_plane_colors, points_num, axis=0)
                     gt_colors[whole_scene_label==1] = plane_colors

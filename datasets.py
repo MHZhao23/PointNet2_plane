@@ -315,7 +315,7 @@ class RealData(Dataset):
     mod: train or test
     """
     
-    def __init__(self, rootpath, num_classes, num_point, train_ratio, mod, block_size=0.5):
+    def __init__(self, rootpath, num_classes, num_point, block_size):
 
         super(RealData, self).__init__()
 
@@ -332,37 +332,24 @@ class RealData(Dataset):
         label_files = [os.path.join(label_path, filename) for filename in label_filename]
         assert len(cloud_files) == len(label_files)
 
-        # split data
         model_num = len(cloud_files)
-        train_size = int(model_num * train_ratio)
         indices = list(range(model_num))
-        random.seed(42)
-        random.shuffle(indices)
-        if mod == "train":
-            split_indices = indices[:train_size]
-        elif mod == "test":
-            split_indices = indices[train_size:]
-        else:
-            raise Exception("mod should be train or test")
-        print(f"loading {len(split_indices)} models ...")
+        print(f"loading {len(indices)} models ...")
 
         self.points_list, self.labels_list = [], []
         self.coord_min_list, self.coord_max_list = [], []
         num_point_all = []
         labelweights = np.zeros(num_classes)
 
-        for i in tqdm(split_indices, total=len(split_indices)):
+        for i in tqdm(indices, total=len(indices)):
             # load point cloud
             pcd = o3d.io.read_point_cloud(cloud_files[i])
             points = np.asarray(pcd.points)
+            points = points - np.amin(points, axis=0)[:3]
             points_num = points.shape[0]
 
             # load labels
-            with open(label_files[i]) as f:
-                lines = f.readlines()
-            # 0 for non-plane, 1 for plane
-            l_labels = [int(l[0]) if int(l[0]) == 0 else 1 for l in lines]
-            labels = np.asarray(l_labels)
+            labels = np.load(label_files[i]).astype(np.float64)
             tmp, _ = np.histogram(labels, range(3))
             labelweights += tmp
             coord_min, coord_max = np.amin(points, axis=0)[:3], np.amax(points, axis=0)[:3]
@@ -373,18 +360,19 @@ class RealData(Dataset):
         labelweights = labelweights.astype(np.float32)
         labelweights = labelweights / np.sum(labelweights)
         self.labelweights = np.power(np.amax(labelweights) / labelweights, 1 / 3.0)
+        # self.labelweights = labelweights / np.sum(labelweights)
 
         sample_prob = num_point_all / np.sum(num_point_all)
         num_iter = int(np.sum(num_point_all) / num_point)
 
         cloud_idxs = []
-        for index in range(len(split_indices)):
+        for index in range(len(indices)):
             cloud_idxs.extend([index] * int(round(sample_prob[index] * num_iter)))
         self.cloud_idxs = np.array(cloud_idxs)
 
         assert len(self.points_list) == len(self.labels_list)
         print(f"loading {len(self.points_list)} models successfully!")
-        print(f"Totally {len(self.cloud_idxs)} samples in {mod} set.")
+        print(f"Totally {len(self.cloud_idxs)} samples")
             
     def __getitem__(self, idx):
         cloud_idx = self.cloud_idxs[idx]
@@ -400,14 +388,15 @@ class RealData(Dataset):
             block_min = center - [tmp_size / 2.0, tmp_size / 2.0, 0]
             block_max = center + [tmp_size / 2.0, tmp_size / 2.0, 0]
             point_idxs = np.where((points[:, 0] >= block_min[0]) & (points[:, 0] <= block_max[0]) & (points[:, 1] >= block_min[1]) & (points[:, 1] <= block_max[1]))[0]
-            if point_idxs.size > 1024:
+            # print(point_idxs.size, iter_num)
+            if point_idxs.size > 256:
                 break
             else:
                 iter_num += 1
 
             # increase the block scale if the center cannot be found
             if iter_num % 5 == 0:
-                tmp_size += self.block_size
+                tmp_size += self.block_size/2
 
         # print(points.shape, point_idxs.size, tmp_size)
         if point_idxs.size >= self.num_point:
@@ -418,16 +407,19 @@ class RealData(Dataset):
         # normalize the sampled points
         selected_points = points[selected_point_idxs, :]  # num_point * 3
         current_points = np.zeros((self.num_point, 6))
-        # TODO: If we only want to distinguish plane and non-plane, we can scale the x, y, z differently,
-        # but if we want to get the plane parameters, x, y, z should be scaled with the same value
-        # coord_min, coord_max = np.amin(points, axis=0)[:3], np.amax(points)[:3]
+        # Normalized method 1:
         current_points[:, 3] = selected_points[:, 0] / self.coord_max_list[cloud_idx][0]
         current_points[:, 4] = selected_points[:, 1] / self.coord_max_list[cloud_idx][1]
         current_points[:, 5] = selected_points[:, 2] / self.coord_max_list[cloud_idx][2]
-        selected_points[:, 0] = selected_points[:, 0] - center[0]
-        selected_points[:, 1] = selected_points[:, 1] - center[1]
-        selected_points[:, 2] = selected_points[:, 2] - center[2]
-        current_points[:, 0:3] = selected_points
+        current_points[:, 0] = selected_points[:, 0] - center[0]
+        current_points[:, 1] = selected_points[:, 1] - center[1]
+        current_points[:, 2] = selected_points[:, 2] - center[2]
+        # # Normalized method 2:
+        # current_points[:, 0] = selected_points[:, 0] - center[0]
+        # current_points[:, 1] = selected_points[:, 1] - center[1]
+        # current_points[:, 2] = selected_points[:, 2] - center[2]
+        # selected_points = selected_points - np.amin(selected_points, axis=0)
+        # current_points[:, 3:] = selected_points / np.amax(selected_points, axis=0)
         current_labels = labels[selected_point_idxs]
 
         return current_points, current_labels
@@ -450,7 +442,7 @@ class SceneLabelledData():
     mod: train or test
     """
     
-    def __init__(self, rootpath, num_classes, num_point, train_ratio=0.7, block_size=0.5, padding=0.001):
+    def __init__(self, rootpath, num_classes, num_point, block_size, padding=0.001):
         super(SceneLabelledData, self).__init__()
 
         self.num_point = num_point
@@ -461,40 +453,37 @@ class SceneLabelledData():
 
         # loading data
         cloud_path = os.path.join(rootpath, "cloud")
-        cloud_filename = sorted(os.listdir(cloud_path))
-        cloud_files = [os.path.join(cloud_path, filename) for filename in cloud_filename]
+        self.cloud_filename = sorted(os.listdir(cloud_path))
+        cloud_files = [os.path.join(cloud_path, filename) for filename in self.cloud_filename]
 
         label_path = os.path.join(rootpath, "label")
         label_filename = sorted(os.listdir(label_path))
         label_files = [os.path.join(label_path, filename) for filename in label_filename]
         assert len(cloud_files) == len(label_files)
 
-        # split data
         model_num = len(cloud_files)
-        indices = list(range(model_num))
-        random.seed(42)
-        random.shuffle(indices)
-        train_size = int(model_num * train_ratio)
-        self.split_indices = indices[:train_size]
-        print(f"loading {len(self.split_indices)} models ...")
+        self.indices = list(range(model_num))
+        print(f"loading {len(self.indices)} models ...")
 
         self.scene_points_num = []
         self.scene_points_list = []
         self.semantic_labels_list = []
         labelweights = np.zeros(num_classes)
 
-        for i in tqdm(self.split_indices, total=len(self.split_indices)):
+        for i in tqdm(self.indices, total=len(self.indices)):
             # load point cloud
             pcd = o3d.io.read_point_cloud(cloud_files[i])
             points = np.asarray(pcd.points)
+            points = points - np.amin(points, axis=0)[:3]
             points_num = points.shape[0]
 
             # load labels
-            with open(label_files[i]) as f:
-                lines = f.readlines()
-            # 0 for non-plane, 1 for plane
-            l_labels = [int(l[0]) if int(l[0]) == 0 else 1 for l in lines]
-            labels = np.asarray(l_labels)
+            # with open(label_files[i]) as f:
+            #     lines = f.readlines()
+            # # 0 for non-plane, 1 for plane
+            # l_labels = [int(l[0]) if int(l[0]) == 0 else 1 for l in lines]
+            # labels = np.asarray(l_labels)
+            labels = np.load(label_files[i]).astype(np.float64)
             tmp, _ = np.histogram(labels, range(num_classes+1))
             labelweights += tmp
 
@@ -525,8 +514,8 @@ class SceneLabelledData():
                 point_idxs = np.where(
                     (points[:, 0] >= s_x - self.padding) & (points[:, 0] <= e_x + self.padding) & (points[:, 1] >= s_y - self.padding) & (
                                 points[:, 1] <= e_y + self.padding))[0]
-                # print(points.shape, point_idxs.size, coord_max[0] - coord_min[0], coord_max[1] - coord_min[1], grid_x, grid_y)
-                if point_idxs.size == 0:
+                # ignore those isolated points (the labels of those points are 0)
+                if point_idxs.size < 5:
                     continue
                 num_batch = int(np.ceil(point_idxs.size / self.num_point))
                 point_size = int(num_batch * self.num_point)
@@ -535,12 +524,20 @@ class SceneLabelledData():
                 point_idxs = np.concatenate((point_idxs, point_idxs_repeat))
                 np.random.shuffle(point_idxs)
                 data_batch = points[point_idxs, :]
+                # Normalized method 1:
                 normlized_xyz = np.zeros((point_size, 3))
                 normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
                 normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]
                 normlized_xyz[:, 2] = data_batch[:, 2] / coord_max[2]
                 data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
                 data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
+                data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
+                # # Normalized method 2:
+                # data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
+                # data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
+                # data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
+                # normlized_xyz = data_batch - np.amin(data_batch, axis=0)
+                # normlized_xyz = normlized_xyz / np.amax(normlized_xyz, axis=0)
                 data_batch = np.concatenate((data_batch, normlized_xyz), axis=1)
                 label_batch = labels[point_idxs].astype(int)
                 batch_weight = self.labelweights[label_batch]
@@ -561,44 +558,47 @@ class SceneLabelledData():
 
 class SceneUnlabelledData():
     """
-    This class create dataset without labeling.
+    This class create dataset with the whole scenes.
     
     Arguments:
 
     rootpath: root path of data, "./data_scene"
     num_classes: the number of classes
     num_point: the number of points in each sampling group
+    train_ratio: the ratio of train and test
     mod: train or test
     """
     
-    def __init__(self, rootpath, num_classes, num_point, stride=1.5, block_size=3, padding=0.001, mod="test"):
+    def __init__(self, rootpath, num_classes, num_point, block_size, padding=0.001):
         super(SceneUnlabelledData, self).__init__()
 
         self.num_point = num_point
         self.block_size = block_size
         self.padding = padding
         self.rootpath = rootpath
-        self.mod = mod
-        self.stride = stride
+        self.stride = block_size / 2
 
         # loading data
-        cloud_filename = sorted(os.listdir(rootpath))
-        cloud_files = [os.path.join(rootpath, filename) for filename in cloud_filename]
-        print(f"loading {len(cloud_files)} models ...")
+        cloud_path = os.path.join(rootpath, "cloud")
+        self.cloud_filename = sorted(os.listdir(cloud_path))
+        cloud_files = [os.path.join(cloud_path, filename) for filename in self.cloud_filename]
 
-        self.indices = range(len(cloud_files))
+        model_num = len(cloud_files)
+        self.indices = list(range(model_num))
+        print(f"loading {len(self.indices)} models ...")
+
         self.scene_points_num = []
         self.scene_points_list = []
 
-        for i in tqdm(self.indices, total=len(cloud_files)):
+        for i in tqdm(self.indices, total=len(self.indices)):
             # load point cloud
             pcd = o3d.io.read_point_cloud(cloud_files[i])
             points = np.asarray(pcd.points)
+            points = points - np.amin(points, axis=0)[:3]
             points_num = points.shape[0]
 
             self.scene_points_num.append(points.shape[0])
             self.scene_points_list.append(points)
-        assert len(self.scene_points_num) == len(self.scene_points_list)
 
     def __getitem__(self, index):
         points = self.scene_points_list[index]
@@ -617,7 +617,8 @@ class SceneUnlabelledData():
                 point_idxs = np.where(
                     (points[:, 0] >= s_x - self.padding) & (points[:, 0] <= e_x + self.padding) & (points[:, 1] >= s_y - self.padding) & (
                                 points[:, 1] <= e_y + self.padding))[0]
-                if point_idxs.size == 0:
+                # ignore those isolated points (the labels of those points are 0)
+                if point_idxs.size < 5:
                     continue
                 num_batch = int(np.ceil(point_idxs.size / self.num_point))
                 point_size = int(num_batch * self.num_point)
@@ -626,19 +627,20 @@ class SceneUnlabelledData():
                 point_idxs = np.concatenate((point_idxs, point_idxs_repeat))
                 np.random.shuffle(point_idxs)
                 data_batch = points[point_idxs, :]
+                # Normalized method 1:
                 normlized_xyz = np.zeros((point_size, 3))
                 normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
                 normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]
                 normlized_xyz[:, 2] = data_batch[:, 2] / coord_max[2]
                 data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
                 data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
+                data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
                 data_batch = np.concatenate((data_batch, normlized_xyz), axis=1)
 
                 data_scene = np.vstack([data_scene, data_batch]) if data_scene.size else data_batch
                 index_scene = np.hstack([index_scene, point_idxs]) if index_scene.size else point_idxs
         data_scene = data_scene.reshape((-1, self.num_point, data_scene.shape[1]))
         index_scene = index_scene.reshape((-1, self.num_point))
-
         return data_scene, index_scene
 
     def __len__(self):
