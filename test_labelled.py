@@ -36,8 +36,8 @@ def parse_args():
     parser.add_argument('--test_path', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
     parser.add_argument('--batch_size', type=int, default=256, help='batch size in testing [default: 32]')
     parser.add_argument('--gpu', type=str, default='0', help='specify gpu device')
-    parser.add_argument('--npoint', type=int, default=256, help='point number [default: 4096]')
-    parser.add_argument('--block_size', type=float, default=0.1, help='Point Number [default: 4096]')
+    parser.add_argument('--npoint', type=int, default=512, help='point number [default: 4096]')
+    parser.add_argument('--block_size', type=float, default=0.2, help='Point Number [default: 4096]')
     parser.add_argument('--log_dir', type=str, required=True, help='experiment root')
     parser.add_argument('--visual', action='store_true', default=False, help='visualize result [default: False]')
     parser.add_argument('--num_votes', type=int, default=3, help='aggregate segmentation scores with voting [default: 5]')
@@ -109,6 +109,8 @@ def main(args):
         scene_id = test_scene_set.indices
         num_batches = len(test_scene_set)
 
+        total_correct = 0
+        total_seen = 0
         total_seen_class = [0 for _ in range(num_classes)]
         total_correct_class = [0 for _ in range(num_classes)]
         total_iou_deno_class = [0 for _ in range(num_classes)]

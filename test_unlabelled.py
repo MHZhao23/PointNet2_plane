@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import argparse
 import logging
 import importlib
@@ -36,8 +37,8 @@ def parse_args():
     parser.add_argument('--test_path', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
     parser.add_argument('--batch_size', type=int, default=256, help='batch size in testing [default: 32]')
     parser.add_argument('--gpu', type=str, default='0', help='specify gpu device')
-    parser.add_argument('--npoint', type=int, default=256, help='point number [default: 4096]')
-    parser.add_argument('--block_size', type=float, default=0.1, help='Point Number [default: 4096]')
+    parser.add_argument('--npoint', type=int, default=512, help='point number [default: 4096]')
+    parser.add_argument('--block_size', type=float, default=0.2, help='Point Number [default: 4096]')
     parser.add_argument('--log_dir', type=str, required=True, help='experiment root')
     parser.add_argument('--num_votes', type=int, default=3, help='aggregate segmentation scores with voting [default: 5]')
     parser.add_argument('--model_epoch', type=str, default=None, help='Besy model choice [default: None]')
@@ -106,44 +107,48 @@ def main(args):
     with torch.no_grad():
         scene_id = test_scene_set.indices
         num_batches = len(test_scene_set)
-
-        total_seen_class = [0 for _ in range(num_classes)]
-        total_correct_class = [0 for _ in range(num_classes)]
-        total_iou_deno_class = [0 for _ in range(num_classes)]
+        total_time = 0.0
 
         log_string('---- EVALUATION WHOLE SCENE----')
 
         for batch_idx in range(num_batches):
             print("Inference [%d/%d] %s ..." % (batch_idx + 1, num_batches, str(scene_id[batch_idx])))
 
+            infer_start = time.time()
             whole_scene_data = test_scene_set.scene_points_list[batch_idx]
             vote_label_pool = np.zeros((whole_scene_data.shape[0], num_classes))
-            for _ in tqdm(range(args.num_votes), total=args.num_votes):
-                scene_data, scene_point_index = test_scene_set[batch_idx]
-                num_blocks = scene_data.shape[0]
-                s_batch_num = (num_blocks + batch_size - 1) // batch_size
-                batch_data = np.zeros((batch_size, num_points, 6))
+            pred_label = np.zeros((whole_scene_data.shape[0]), dtype=int)
+            scene_data, scene_point_index = test_scene_set[batch_idx]
+            num_blocks = scene_data.shape[0]
+            s_batch_num = (num_blocks + batch_size - 1) // batch_size
+            batch_data = np.zeros((batch_size, num_points, 6))
 
-                batch_label = np.zeros((batch_size, num_points))
-                batch_point_index = np.zeros((batch_size, num_points))
+            batch_label = np.zeros((batch_size, num_points))
+            batch_point_index = np.zeros((batch_size, num_points), dtype=int)
 
-                for sbatch in range(s_batch_num):
-                    start_idx = sbatch * batch_size
-                    end_idx = min((sbatch + 1) * batch_size, num_blocks)
-                    real_batch_size = end_idx - start_idx
-                    batch_data[0:real_batch_size, ...] = scene_data[start_idx:end_idx, ...]
-                    batch_point_index[0:real_batch_size, ...] = scene_point_index[start_idx:end_idx, ...]
+            for sbatch in range(s_batch_num):
+                start_idx = sbatch * batch_size
+                end_idx = min((sbatch + 1) * batch_size, num_blocks)
+                real_batch_size = end_idx - start_idx
+                batch_data[0:real_batch_size, ...] = scene_data[start_idx:end_idx, ...]
+                batch_point_index[0:real_batch_size, ...] = scene_point_index[start_idx:end_idx, ...]
 
-                    torch_data = torch.Tensor(batch_data)
-                    torch_data = torch_data.float().cuda()
-                    torch_data = torch_data.transpose(2, 1)
-                    seg_pred, _ = classifier(torch_data)
-                    batch_pred_label = seg_pred.contiguous().cpu().data.max(2)[1].numpy()
+                torch_data = torch.Tensor(batch_data)
+                torch_data = torch_data.float().cuda()
+                torch_data = torch_data.transpose(2, 1)
+                seg_pred, _ = classifier(torch_data)
+                batch_pred_label = seg_pred.contiguous().cpu().data.max(2)[1].numpy()
 
-                    vote_label_pool = add_vote(vote_label_pool, batch_point_index[0:real_batch_size, ...],
-                                               batch_pred_label[0:real_batch_size, ...])
+                batch_pred_label_all = batch_pred_label.reshape(-1)
+                batch_point_index_all = batch_point_index.reshape(-1)
+                batch_pred_label_plane = batch_pred_label_all[batch_pred_label_all==1]
+                batch_point_index_plane = batch_point_index_all[batch_pred_label_all==1]
+                pred_label[batch_point_index_plane] = 1
 
-            pred_label = np.argmax(vote_label_pool, 1)
+            # pred_label = np.argmax(vote_label_pool, 1)
+            infer_end = time.time()
+            total_time += (infer_end - infer_start)
+            print("Inference cost: ", infer_end - infer_start)
 
             # save the label
             pred_filename = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_pred.npy')
@@ -163,6 +168,7 @@ def main(args):
             pcd_path = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_pred.pcd')
             o3d.io.write_point_cloud(pcd_path, pred_pcd)
 
+        print("avg time: %f" % (total_time / num_batches))
         print("Done!")
 
 

@@ -87,29 +87,6 @@ if __name__ == "__main__":
     #     pcd = o3d.io.read_point_cloud(pcd_f)
     #     o3d.visualization.draw_geometries([pcd])
 
-    # folder = "labelled"
-    # epoch = 31
-    # ids = [1, 4, 23, 42, 53, 67, 73, 83]
-    # for i in ids:
-    #     pcd = o3d.io.read_point_cloud(f"//home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_{folder}_{epoch}/{ids[0]}_pred.pcd")
-    #     o3d.visualization.draw_geometries([pcd])
-
-    #     pcd = o3d.io.read_point_cloud(f"//home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data/eval_{folder}_{epoch}/{ids[0]}_gt.pcd")
-    #     o3d.visualization.draw_geometries([pcd])
-
-    # scene_id = 0
-    # exp_folder = "pointnet2_real_data_0813"
-    # epoch = range(0, 60, 5)
-    # save_path = f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/eval_training"
-    # pcd = o3d.io.read_point_cloud(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/eval_training/{scene_id}_gt.pcd")
-    # o3d.visualization.draw_geometries([pcd])
-    # pcd_f = f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/eval_training/{scene_id}_gt.pcd"
-    # pcd = o3d.io.read_point_cloud(pcd_f)
-
-    # for e in epoch:
-    #     pcd = o3d.io.read_point_cloud(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/eval_training/{scene_id}_epoch_{e}_pred.pcd")
-    #     o3d.visualization.draw_geometries([pcd])
-
     # TODO: Compare the results
     rootpath = "./data_scene/results"
     label_path = os.path.join(rootpath, "gt")
@@ -179,6 +156,15 @@ if __name__ == "__main__":
     print('\n')
     print(f'pointnet2 plane IOU: {round((pointnet2_correct_class[1] / pointnet2_deno_class[1]) * 100, 1)}%')
     print(f'ori plane IOU: {(round((ori_correct_class[1] / ori_deno_class[1]) * 100, 1))}%')
+
+    # # pointnet2 classification
+    # print((3.377694606781006 + 2.7212154865264893 + 2.6526401042938232 + 2.179804801940918 + 2.0946335792541504 + 2.7523531913757324) / 6)
+
+    # # ori classification
+    # print((1.345 + 0.968 + 1.67 + 1.543 + 0.82 + 1.382) / 6)
+
+    # # ori 
+    # print((2.484 + 1.885 + 3.12 + 2.62 + 1.742 + 2.046) / 6) 
 
     # # # TODO: visualize with different colours
     # rootpath = "./data_plane/rawDataNonPlane"

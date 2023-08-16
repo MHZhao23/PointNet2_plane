@@ -70,8 +70,8 @@ def parse_args():
     parser.add_argument('--optimizer', type=str, default='Adam', help='Adam or SGD [default: Adam]')
     parser.add_argument('--log_dir', type=str, default=None, help='Log path [default: None]')
     parser.add_argument('--decay_rate', type=float, default=1e-4, help='weight decay [default: 1e-4]')
-    parser.add_argument('--npoint', type=int, default=256, help='Point Number [default: 4096]')
-    parser.add_argument('--block_size', type=float, default=0.1, help='Point Number [default: 4096]')
+    parser.add_argument('--npoint', type=int, default=512, help='Point Number [default: 4096]')
+    parser.add_argument('--block_size', type=float, default=0.2, help='Point Number [default: 4096]')
     parser.add_argument('--step_size', type=int, default=10, help='Decay step for lr decay [default: every 10 epochs]')
     parser.add_argument('--lr_decay', type=float, default=0.7, help='Decay rate for lr decay [default: 0.7]')
 
@@ -208,7 +208,7 @@ def main(args):
     MOMENTUM_DECCAY_STEP = args.step_size
 
     global_epoch = 0
-    best_iou = 0
+    best_acc = 0
     train_loss_list, train_acc_list, test_loss_list, test_acc_list = [], [], [], []
 
     '''Train on chopped scenes'''
@@ -327,10 +327,11 @@ def main(args):
             mIoU = np.sum(labelweights * class_IoU)
             class_acc = np.array(total_correct_class) / (np.array(total_seen_class, dtype=np.float64) + 1e-6)
             macc = np.sum(labelweights * class_acc)
+            avgacc = total_correct / float(total_seen)
             log_string('Plane: %d, %f; Non-plane: %d, %f;' % (total_plane, total_plane/(total_plane+total_nonplane), total_nonplane, total_nonplane/(total_plane+total_nonplane)))
             log_string('eval mean loss: %f' % (loss_sum / float(num_batches)))
             log_string('eval point avg class IoU: %f' % (mIoU))
-            log_string('eval point accuracy: %f' % (total_correct / float(total_seen)))
+            log_string('eval point accuracy: %f' % (avgacc))
             log_string('eval point avg class acc: %f' % (macc))
 
             iou_per_class_str = '------- IoU --------\n'
@@ -345,96 +346,21 @@ def main(args):
             test_loss_list.append((loss_sum / num_batches).cpu().detach().numpy())
             test_acc_list.append(total_correct / float(total_seen) * 100)
 
-            if mIoU >= best_iou:
-                best_iou = mIoU
+            if avgacc >= best_acc:
+                best_acc = avgacc
                 log_string('Saving model....')
                 savepath = str(bestmodels_cp_dir) + f'/best_model_{epoch}.pth'
                 log_string('Model Saved at %s' % savepath)
                 state = {
                     'epoch': epoch,
-                    'class_avg_iou': mIoU,
+                    'class_avg_acc': avgacc,
                     'model_state_dict': classifier.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                 }
                 torch.save(state, savepath)
                 log_string('Best model saved successfully!')
 
-            log_string('Best mIoU: %f' % best_iou)
-
-            ###
-            if epoch % 5 == 0:
-                total_plane = 0
-                total_nonplane = 0
-                scene_id = test_scene_set.indices
-                batch_idxs = list(range(6))
-                log_string('---- EVALUATION WHOLE SCENE----')
-                for batch_idx in batch_idxs:
-                    print("Inference [%d/%d] %s ..." % (batch_idx + 1, len(batch_idxs), str(scene_id[batch_idx])))
-                    total_seen_class_tmp = [0 for _ in range(num_classes)]
-                    total_correct_class_tmp = [0 for _ in range(num_classes)]
-                    total_iou_deno_class_tmp = [0 for _ in range(num_classes)]
-
-                    whole_scene_data = test_scene_set.scene_points_list[batch_idx]
-                    whole_scene_label = test_scene_set.semantic_labels_list[batch_idx]
-                    vote_label_pool = np.zeros((whole_scene_label.shape[0], num_classes))
-                    for _ in tqdm(range(3), total=3):
-                        scene_data, scene_label, scene_smpw, scene_point_index = test_scene_set[batch_idx]
-                        num_blocks = scene_data.shape[0]
-                        s_batch_num = (num_blocks + batch_size - 1) // batch_size
-                        batch_data = np.zeros((batch_size, num_points, 6))
-
-                        batch_label = np.zeros((batch_size, num_points))
-                        batch_point_index = np.zeros((batch_size, num_points))
-                        batch_smpw = np.zeros((batch_size, num_points))
-
-                        for sbatch in range(s_batch_num):
-                            start_idx = sbatch * batch_size
-                            end_idx = min((sbatch + 1) * batch_size, num_blocks)
-                            real_batch_size = end_idx - start_idx
-                            batch_data[0:real_batch_size, ...] = scene_data[start_idx:end_idx, ...]
-                            batch_label[0:real_batch_size, ...] = scene_label[start_idx:end_idx, ...]
-                            batch_point_index[0:real_batch_size, ...] = scene_point_index[start_idx:end_idx, ...]
-                            batch_smpw[0:real_batch_size, ...] = scene_smpw[start_idx:end_idx, ...]
-
-                            torch_data = torch.Tensor(batch_data)
-                            torch_data = torch_data.float().cuda()
-                            torch_data = torch_data.transpose(2, 1)
-                            seg_pred, _ = classifier(torch_data)
-                            batch_pred_label = seg_pred.contiguous().cpu().data.max(2)[1].numpy()
-
-                            vote_label_pool = add_vote(vote_label_pool, batch_point_index[0:real_batch_size, ...],
-                                                    batch_pred_label[0:real_batch_size, ...],
-                                                    batch_smpw[0:real_batch_size, ...])
-
-                    pred_label = np.argmax(vote_label_pool, 1)
-                    plane_num = np.sum(pred_label == 1)
-                    nonplane_num = np.sum(pred_label == 0)
-                    total_plane += plane_num
-                    total_nonplane += nonplane_num
-                    log_string('Plane: %d, %f; Non-plane: %d, %f;' % (total_plane, total_plane/(total_plane+total_nonplane), total_nonplane, total_nonplane/(total_plane+total_nonplane)))
-
-                    gt_pcd = o3d.geometry.PointCloud()
-                    gt_pcd.points = o3d.utility.Vector3dVector(whole_scene_data)
-                    points_num = whole_scene_data.shape[0]
-                    plane_colors = np.array([[0.1, 0.1, 0.3]])
-                    non_plane_colors = np.array([[0.8, 0.5, 0.3]])
-                    # paint the gt point cloud
-                    gt_colors = np.repeat(non_plane_colors, points_num, axis=0)
-                    gt_colors[whole_scene_label==1] = plane_colors
-                    gt_pcd.colors = o3d.Vector3dVector(gt_colors)
-                    pcd_path = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_gt.pcd')
-                    o3d.io.write_point_cloud(pcd_path, gt_pcd)
-
-                    pred_pcd = o3d.geometry.PointCloud()
-                    pred_pcd.points = o3d.utility.Vector3dVector(whole_scene_data)
-                    points_num = whole_scene_data.shape[0]
-                    # paint the pred point cloud
-                    pred_colors = np.repeat(non_plane_colors, points_num, axis=0)
-                    pred_colors[pred_label==1] = plane_colors
-                    pred_pcd.colors = o3d.Vector3dVector(pred_colors)
-                    pcd_path = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_epoch_' + str(epoch) + '_pred.pcd')
-                    o3d.io.write_point_cloud(pcd_path, pred_pcd)
-            ###
+            log_string('Best accuracy: %f' % best_acc)
 
         global_epoch += 1
 
