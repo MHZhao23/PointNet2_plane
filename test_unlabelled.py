@@ -35,6 +35,7 @@ def parse_args():
     '''PARAMETERS'''
     parser = argparse.ArgumentParser('Model')
     parser.add_argument('--test_path', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
+    parser.add_argument('--local_normalize', action="store_false", help='Normalize points with local coordinate [default: True]')
     parser.add_argument('--batch_size', type=int, default=256, help='batch size in testing [default: 32]')
     parser.add_argument('--gpu', type=str, default='0', help='specify gpu device')
     parser.add_argument('--npoint', type=int, default=512, help='point number [default: 4096]')
@@ -90,7 +91,7 @@ def main(args):
 
     '''DATASET LOADING'''
     log_string("start loading testing data ...")
-    test_scene_set = SceneUnlabelledData(args.test_path, num_classes, num_points, block_size)
+    test_scene_set = SceneUnlabelledData(args.test_path, num_classes, num_points, block_size, normalized=args.local_normalize)
     log_string("using {} scene for testing.".format(test_scene_set.__len__()))
 
     '''MODEL LOADING'''

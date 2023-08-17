@@ -315,12 +315,13 @@ class RealData(Dataset):
     mod: train or test
     """
     
-    def __init__(self, rootpath, num_classes, num_point, block_size):
+    def __init__(self, rootpath, num_classes, num_point, block_size, normalized=True):
 
         super(RealData, self).__init__()
 
         self.num_point = num_point
         self.block_size = block_size
+        self.normalized = normalized
 
         # loading data
         cloud_path = os.path.join(rootpath, "cloud")
@@ -407,19 +408,19 @@ class RealData(Dataset):
         # normalize the sampled points
         selected_points = points[selected_point_idxs, :]  # num_point * 3
         current_points = np.zeros((self.num_point, 6))
-        # # Normalized method 1:
-        # current_points[:, 3] = selected_points[:, 0] / self.coord_max_list[cloud_idx][0]
-        # current_points[:, 4] = selected_points[:, 1] / self.coord_max_list[cloud_idx][1]
-        # current_points[:, 5] = selected_points[:, 2] / self.coord_max_list[cloud_idx][2]
-        # current_points[:, 0] = selected_points[:, 0] - center[0]
-        # current_points[:, 1] = selected_points[:, 1] - center[1]
-        # current_points[:, 2] = selected_points[:, 2] - center[2]
-        # Normalized method 2:
-        current_points[:, 0] = selected_points[:, 0] - center[0]
-        current_points[:, 1] = selected_points[:, 1] - center[1]
-        current_points[:, 2] = selected_points[:, 2] - center[2]
-        selected_points = selected_points - np.amin(selected_points, axis=0)
-        current_points[:, 3:] = selected_points / np.amax(selected_points, axis=0)
+        if self.normalized:
+            current_points[:, 0] = selected_points[:, 0] - center[0]
+            current_points[:, 1] = selected_points[:, 1] - center[1]
+            current_points[:, 2] = selected_points[:, 2] - center[2]
+            selected_points = selected_points - np.amin(selected_points, axis=0)
+            current_points[:, 3:] = selected_points / np.amax(selected_points, axis=0)
+        else:
+            current_points[:, 3] = selected_points[:, 0] / self.coord_max_list[cloud_idx][0]
+            current_points[:, 4] = selected_points[:, 1] / self.coord_max_list[cloud_idx][1]
+            current_points[:, 5] = selected_points[:, 2] / self.coord_max_list[cloud_idx][2]
+            current_points[:, 0] = selected_points[:, 0] - center[0]
+            current_points[:, 1] = selected_points[:, 1] - center[1]
+            current_points[:, 2] = selected_points[:, 2] - center[2]
         current_labels = labels[selected_point_idxs]
 
         return current_points, current_labels
@@ -442,7 +443,7 @@ class SceneLabelledData():
     mod: train or test
     """
     
-    def __init__(self, rootpath, num_classes, num_point, block_size, padding=0.001):
+    def __init__(self, rootpath, num_classes, num_point, block_size, padding=0.001, normalized=True):
         super(SceneLabelledData, self).__init__()
 
         self.num_point = num_point
@@ -450,6 +451,7 @@ class SceneLabelledData():
         self.padding = padding
         self.rootpath = rootpath
         self.stride = block_size / 2
+        self.normalized = normalized
 
         # loading data
         cloud_path = os.path.join(rootpath, "cloud")
@@ -524,20 +526,20 @@ class SceneLabelledData():
                 point_idxs = np.concatenate((point_idxs, point_idxs_repeat))
                 np.random.shuffle(point_idxs)
                 data_batch = points[point_idxs, :]
-                # # Normalized method 1:
-                # normlized_xyz = np.zeros((point_size, 3))
-                # normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
-                # normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]
-                # normlized_xyz[:, 2] = data_batch[:, 2] / coord_max[2]
-                # data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
-                # data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
-                # data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
-                # Normalized method 2:
-                data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
-                data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
-                data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
-                normlized_xyz = data_batch - np.amin(data_batch, axis=0)
-                normlized_xyz = normlized_xyz / np.amax(normlized_xyz, axis=0)
+                if self.normalized:
+                    data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
+                    data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
+                    data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
+                    normlized_xyz = data_batch - np.amin(data_batch, axis=0)
+                    normlized_xyz = normlized_xyz / np.amax(normlized_xyz, axis=0)
+                else:
+                    normlized_xyz = np.zeros((point_size, 3))
+                    normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
+                    normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]
+                    normlized_xyz[:, 2] = data_batch[:, 2] / coord_max[2]
+                    data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
+                    data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
+                    data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
                 data_batch = np.concatenate((data_batch, normlized_xyz), axis=1)
                 label_batch = labels[point_idxs].astype(int)
                 batch_weight = self.labelweights[label_batch]
@@ -569,7 +571,7 @@ class SceneUnlabelledData():
     mod: train or test
     """
     
-    def __init__(self, rootpath, num_classes, num_point, block_size, padding=0.001):
+    def __init__(self, rootpath, num_classes, num_point, block_size, padding=0.001, normalized=True):
         super(SceneUnlabelledData, self).__init__()
 
         self.num_point = num_point
@@ -577,6 +579,7 @@ class SceneUnlabelledData():
         self.padding = padding
         self.rootpath = rootpath
         self.stride = block_size / 2
+        self.normalized = normalized
 
         # loading data
         cloud_path = os.path.join(rootpath, "cloud")
@@ -627,20 +630,20 @@ class SceneUnlabelledData():
                 point_idxs = np.concatenate((point_idxs, point_idxs_repeat))
                 np.random.shuffle(point_idxs)
                 data_batch = points[point_idxs, :]
-                # # Normalized method 1:
-                # normlized_xyz = np.zeros((point_size, 3))
-                # normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
-                # normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]
-                # normlized_xyz[:, 2] = data_batch[:, 2] / coord_max[2]
-                # data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
-                # data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
-                # data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
-                # Normalized method 2:
-                data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
-                data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
-                data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
-                normlized_xyz = data_batch - np.amin(data_batch, axis=0)
-                normlized_xyz = normlized_xyz / np.amax(normlized_xyz, axis=0)
+                if self.normalized:
+                    data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
+                    data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
+                    data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
+                    normlized_xyz = data_batch - np.amin(data_batch, axis=0)
+                    normlized_xyz = normlized_xyz / np.amax(normlized_xyz, axis=0)
+                else:
+                    normlized_xyz = np.zeros((point_size, 3))
+                    normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
+                    normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]
+                    normlized_xyz[:, 2] = data_batch[:, 2] / coord_max[2]
+                    data_batch[:, 0] = data_batch[:, 0] - (s_x + self.block_size / 2.0)
+                    data_batch[:, 1] = data_batch[:, 1] - (s_y + self.block_size / 2.0)
+                    data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
                 data_batch = np.concatenate((data_batch, normlized_xyz), axis=1)
 
                 data_scene = np.vstack([data_scene, data_batch]) if data_scene.size else data_batch

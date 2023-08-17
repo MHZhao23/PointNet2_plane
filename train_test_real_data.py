@@ -62,6 +62,7 @@ def parse_args():
     parser.add_argument('--model', type=str, default='pointnet2_sem_seg', help='Model name [default: pointnet2_sem_seg]')
     parser.add_argument('--train_path', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
     parser.add_argument('--test_path', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
+    parser.add_argument('--local_normalize', action="store_false", help='Normalize points with local coordinate [default: True]')
     parser.add_argument('--batch_size', type=int, default=256, help='Batch Size during training [default: 16]')
     parser.add_argument('--epoch', default=32, type=int, help='Epoch to run [default: 32]')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='Initial learning rate [default: 0.001]')
@@ -132,7 +133,7 @@ def main(args):
     '''DATASET LOADING'''
     log_string('\n\n>>>>>>>> DATASET LOADING <<<<<<<<')
     log_string("start loading training data ...")
-    train_set = RealData(args.train_path, num_classes, num_points, block_size)
+    train_set = RealData(args.train_path, num_classes, num_points, block_size, normalized=args.local_normalize)
     train_loader = DataLoader(train_set,
                               batch_size=batch_size,
                               shuffle=True,
@@ -143,7 +144,7 @@ def main(args):
     weights = torch.Tensor(train_set.labelweights).to(device)
 
     log_string("\nstart loading testing data ...")
-    test_set = RealData(args.test_path, num_classes, num_points, block_size)
+    test_set = RealData(args.test_path, num_classes, num_points, block_size, normalized=args.local_normalize)
     test_loader = DataLoader(test_set,
                               batch_size=batch_size,
                               shuffle=False,
@@ -153,7 +154,7 @@ def main(args):
     log_string("using {} samples for testing.".format(test_set.__len__()))
 
     log_string("\nstart loading whole scene testing data ...")
-    test_scene_set = SceneLabelledData(args.test_path, num_classes, num_points, block_size)
+    test_scene_set = SceneLabelledData(args.test_path, num_classes, num_points, block_size, normalized=args.local_normalize)
     log_string("using {} scene for testing.".format(test_scene_set.__len__()))
 
     '''MODEL LOADING'''
@@ -186,7 +187,7 @@ def main(args):
             log_string('No existing model, starting training from scratch...')
 
     if args.transfer == True:
-        require_grad_layer = ["sa1", "conv2"]
+        require_grad_layer = ["conv0", "sa1", "conv1", "conv2"]
         for param in classifier.named_parameters():
             if param[0][:3] in require_grad_layer or param[0][:5] in require_grad_layer:
                 param[1].requires_grad = True
