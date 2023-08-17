@@ -86,3 +86,22 @@ class plane         , IoU: 0.818
 2023-08-17 20:55:56,648 - Model - INFO - eval point avg class IoU: 0.530644
 2023-08-17 20:55:56,648 - Model - INFO - eval whole scene point avg class acc: 0.620780
 2023-08-17 20:55:56,648 - Model - INFO - eval whole scene point accuracy: 0.828055
+2023-08-17 21:56:13,179 - Model - INFO - PARAMETER ...
+2023-08-17 21:56:13,179 - Model - INFO - Namespace(batch_size=256, block_size=0.2, gpu='0', local_normalize=True, log_dir='pointnet2_real_data_0817_notf', model_epoch='63', npoint=512, num_votes=3, test_path='./data_scene/crop_testdata', visual=True)
+2023-08-17 21:56:13,211 - Model - INFO - using cuda:0 device.
+2023-08-17 21:56:13,211 - Model - INFO - start loading testing data ...
+2023-08-17 21:56:13,232 - Model - INFO - using 6 scene for testing.
+2023-08-17 21:56:13,646 - Model - INFO - ---- EVALUATION WHOLE SCENE----
+2023-08-17 21:56:15,020 - Model - INFO - Mean IoU of scene1_12: 0.5088
+2023-08-17 21:56:15,754 - Model - INFO - Mean IoU of scene3_15: 0.5150
+2023-08-17 21:56:16,597 - Model - INFO - Mean IoU of scene6_21: 0.6417
+2023-08-17 21:56:17,425 - Model - INFO - Mean IoU of scene7_9: 0.4861
+2023-08-17 21:56:17,827 - Model - INFO - Mean IoU of scene8_4: 0.6169
+2023-08-17 21:56:18,561 - Model - INFO - Mean IoU of testscene25_19: 0.4919
+2023-08-17 21:56:18,563 - Model - INFO - ------- IoU --------
+class non-plane     , IoU: 0.270 
+class plane         , IoU: 0.829 
+
+2023-08-17 21:56:18,563 - Model - INFO - eval point avg class IoU: 0.549355
+2023-08-17 21:56:18,563 - Model - INFO - eval whole scene point avg class acc: 0.635370
+2023-08-17 21:56:18,563 - Model - INFO - eval whole scene point accuracy: 0.838804

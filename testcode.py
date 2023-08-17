@@ -87,75 +87,75 @@ if __name__ == "__main__":
     #     pcd = o3d.io.read_point_cloud(pcd_f)
     #     o3d.visualization.draw_geometries([pcd])
 
-    # TODO: Compare the results
-    rootpath = "./data_scene/results"
-    label_path = os.path.join(rootpath, "gt")
-    label_filename = sorted(os.listdir(label_path))
-    label_files = [os.path.join(label_path, filename) for filename in label_filename]
+    # # TODO: Compare the results
+    # rootpath = "./data_scene/results"
+    # label_path = os.path.join(rootpath, "gt")
+    # label_filename = sorted(os.listdir(label_path))
+    # label_files = [os.path.join(label_path, filename) for filename in label_filename]
 
-    pointnet2_path = os.path.join(rootpath, "pointnet2")
-    pointnet2_filename = sorted(os.listdir(pointnet2_path))
-    pointnet2_files = [os.path.join(pointnet2_path, filename) for filename in pointnet2_filename]
+    # pointnet2_path = os.path.join(rootpath, "pointnet2")
+    # pointnet2_filename = sorted(os.listdir(pointnet2_path))
+    # pointnet2_files = [os.path.join(pointnet2_path, filename) for filename in pointnet2_filename]
 
-    ori_path = os.path.join(rootpath, "ori")
-    ori_filename = sorted(os.listdir(ori_path))
-    ori_files = [os.path.join(ori_path, filename) for filename in ori_filename]
+    # ori_path = os.path.join(rootpath, "ori")
+    # ori_filename = sorted(os.listdir(ori_path))
+    # ori_files = [os.path.join(ori_path, filename) for filename in ori_filename]
 
-    assert len(label_files) == len(pointnet2_files) == len(ori_files)
+    # assert len(label_files) == len(pointnet2_files) == len(ori_files)
     
-    total_num = 0
-    pointnet2_correct = 0
-    ori_correct = 0
+    # total_num = 0
+    # pointnet2_correct = 0
+    # ori_correct = 0
 
-    num_class = [0, 0]
-    pointnet2_correct_class = [0, 0]
-    pointnet2_deno_class = [0, 0]
-    ori_correct_class = [0, 0]
-    ori_deno_class = [0, 0]
-    for i in range(len(label_files)):
-        labels = np.load(label_files[i])
-        total_num += labels.shape[0]
-        num_class[0] += np.sum((labels == 0))
-        num_class[1] += np.sum((labels == 1))
+    # num_class = [0, 0]
+    # pointnet2_correct_class = [0, 0]
+    # pointnet2_deno_class = [0, 0]
+    # ori_correct_class = [0, 0]
+    # ori_deno_class = [0, 0]
+    # for i in range(len(label_files)):
+    #     labels = np.load(label_files[i])
+    #     total_num += labels.shape[0]
+    #     num_class[0] += np.sum((labels == 0))
+    #     num_class[1] += np.sum((labels == 1))
 
-        pointnet2_pred = np.load(pointnet2_files[i])
-        pointnet2_correct += (pointnet2_pred == labels).sum()
-        pointnet2_correct_class[0] += np.sum((pointnet2_pred == 0) & (labels == 0))
-        pointnet2_correct_class[1] += np.sum((pointnet2_pred == 1) & (labels == 1))
-        pointnet2_deno_class[0] += np.sum((pointnet2_pred == 0) | (labels == 0))
-        pointnet2_deno_class[1] += np.sum((pointnet2_pred == 1) | (labels == 1))
+    #     pointnet2_pred = np.load(pointnet2_files[i])
+    #     pointnet2_correct += (pointnet2_pred == labels).sum()
+    #     pointnet2_correct_class[0] += np.sum((pointnet2_pred == 0) & (labels == 0))
+    #     pointnet2_correct_class[1] += np.sum((pointnet2_pred == 1) & (labels == 1))
+    #     pointnet2_deno_class[0] += np.sum((pointnet2_pred == 0) | (labels == 0))
+    #     pointnet2_deno_class[1] += np.sum((pointnet2_pred == 1) | (labels == 1))
 
-        with open(ori_files[i]) as f:
-            lines = f.readlines()
-        l_labels = [int(l[0]) if int(l[0]) == 0 else 1 for l in lines]
-        ori_pred = np.asarray(l_labels)
-        ori_correct += (ori_pred == labels).sum()
-        ori_correct_class[0] += np.sum((ori_pred == 0) & (labels == 0))
-        ori_correct_class[1] += np.sum((ori_pred == 1) & (labels == 1))
-        ori_deno_class[0] += np.sum((ori_pred == 0) | (labels == 0))
-        ori_deno_class[1] += np.sum((ori_pred == 1) | (labels == 1))
+    #     with open(ori_files[i]) as f:
+    #         lines = f.readlines()
+    #     l_labels = [int(l[0]) if int(l[0]) == 0 else 1 for l in lines]
+    #     ori_pred = np.asarray(l_labels)
+    #     ori_correct += (ori_pred == labels).sum()
+    #     ori_correct_class[0] += np.sum((ori_pred == 0) & (labels == 0))
+    #     ori_correct_class[1] += np.sum((ori_pred == 1) & (labels == 1))
+    #     ori_deno_class[0] += np.sum((ori_pred == 0) | (labels == 0))
+    #     ori_deno_class[1] += np.sum((ori_pred == 1) | (labels == 1))
 
-    pointnet2_acc = (pointnet2_correct / total_num) * 100
-    ori_acc = (ori_correct / total_num) * 100
-    print('\n')
-    print(f'pointnet2 accuracy: {round(pointnet2_acc, 1)}%')
-    print(f'ori accuracy: {(round(ori_acc, 1))}%')
+    # pointnet2_acc = (pointnet2_correct / total_num) * 100
+    # ori_acc = (ori_correct / total_num) * 100
+    # print('\n')
+    # print(f'pointnet2 accuracy: {round(pointnet2_acc, 1)}%')
+    # print(f'ori accuracy: {(round(ori_acc, 1))}%')
 
-    print('\n')
-    print(f'pointnet2 non-plane accuracy: {round((pointnet2_correct_class[0] / num_class[0]) * 100, 1)}%')
-    print(f'ori non-plane accuracy: {(round((ori_correct_class[0] / num_class[0]) * 100, 1))}%')
+    # print('\n')
+    # print(f'pointnet2 non-plane accuracy: {round((pointnet2_correct_class[0] / num_class[0]) * 100, 1)}%')
+    # print(f'ori non-plane accuracy: {(round((ori_correct_class[0] / num_class[0]) * 100, 1))}%')
 
-    print('\n')
-    print(f'pointnet2 plane accuracy: {round((pointnet2_correct_class[1] / num_class[1]) * 100, 1)}%')
-    print(f'ori plane accuracy: {(round((ori_correct_class[1] / num_class[1]) * 100, 1))}%')
+    # print('\n')
+    # print(f'pointnet2 plane accuracy: {round((pointnet2_correct_class[1] / num_class[1]) * 100, 1)}%')
+    # print(f'ori plane accuracy: {(round((ori_correct_class[1] / num_class[1]) * 100, 1))}%')
 
-    print('\n')
-    print(f'pointnet2 non-plane IOU: {round((pointnet2_correct_class[0] / pointnet2_deno_class[0]) * 100, 1)}%')
-    print(f'ori non-plane IOU: {(round((ori_correct_class[0] / ori_deno_class[0]) * 100, 1))}%')
+    # print('\n')
+    # print(f'pointnet2 non-plane IOU: {round((pointnet2_correct_class[0] / pointnet2_deno_class[0]) * 100, 1)}%')
+    # print(f'ori non-plane IOU: {(round((ori_correct_class[0] / ori_deno_class[0]) * 100, 1))}%')
 
-    print('\n')
-    print(f'pointnet2 plane IOU: {round((pointnet2_correct_class[1] / pointnet2_deno_class[1]) * 100, 1)}%')
-    print(f'ori plane IOU: {(round((ori_correct_class[1] / ori_deno_class[1]) * 100, 1))}%')
+    # print('\n')
+    # print(f'pointnet2 plane IOU: {round((pointnet2_correct_class[1] / pointnet2_deno_class[1]) * 100, 1)}%')
+    # print(f'ori plane IOU: {(round((ori_correct_class[1] / ori_deno_class[1]) * 100, 1))}%')
 
     # # pointnet2 classification
     # print((3.377694606781006 + 2.7212154865264893 + 2.6526401042938232 + 2.179804801940918 + 2.0946335792541504 + 2.7523531913757324) / 6)
