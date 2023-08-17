@@ -105,9 +105,6 @@ def main(args):
     log_dir = experiment_dir.joinpath('logs/')
     log_dir.mkdir(exist_ok=True)
 
-    visual_dir = experiment_dir.joinpath('eval_training/')
-    visual_dir.mkdir(exist_ok=True)
-
     '''LOG'''
     args = parse_args()
     logger = logging.getLogger("Model")
@@ -349,6 +346,19 @@ def main(args):
 
             if avgacc >= best_acc:
                 best_acc = avgacc
+                log_string('Saving model....')
+                savepath = str(bestmodels_cp_dir) + f'/best_model_{epoch}.pth'
+                log_string('Model Saved at %s' % savepath)
+                state = {
+                    'epoch': epoch,
+                    'class_avg_acc': avgacc,
+                    'model_state_dict': classifier.state_dict(),
+                    'optimizer_state_dict': optimizer.state_dict(),
+                }
+                torch.save(state, savepath)
+                log_string('Best model saved successfully!')
+
+            elif epoch == (args.epoch - 1):
                 log_string('Saving model....')
                 savepath = str(bestmodels_cp_dir) + f'/best_model_{epoch}.pth'
                 log_string('Model Saved at %s' % savepath)

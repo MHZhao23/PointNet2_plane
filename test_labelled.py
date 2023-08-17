@@ -129,36 +129,36 @@ def main(args):
             whole_scene_data = test_scene_set.scene_points_list[batch_idx]
             whole_scene_label = test_scene_set.semantic_labels_list[batch_idx]
             vote_label_pool = np.zeros((whole_scene_label.shape[0], num_classes))
-            for _ in tqdm(range(args.num_votes), total=args.num_votes):
-                scene_data, scene_label, scene_smpw, scene_point_index = test_scene_set[batch_idx]
-                num_blocks = scene_data.shape[0]
-                s_batch_num = (num_blocks + batch_size - 1) // batch_size
-                batch_data = np.zeros((batch_size, num_points, 6))
+            pred_label = np.zeros(whole_scene_data.shape[0], dtype=int)
+            scene_data, scene_label, scene_smpw, scene_point_index = test_scene_set[batch_idx]
+            num_blocks = scene_data.shape[0]
+            s_batch_num = (num_blocks + batch_size - 1) // batch_size
+            batch_data = np.zeros((batch_size, num_points, 6))
 
-                batch_label = np.zeros((batch_size, num_points))
-                batch_point_index = np.zeros((batch_size, num_points))
-                batch_smpw = np.zeros((batch_size, num_points))
+            batch_label = np.zeros((batch_size, num_points))
+            batch_point_index = np.zeros((batch_size, num_points), dtype=int)
+            batch_smpw = np.zeros((batch_size, num_points))
 
-                for sbatch in range(s_batch_num):
-                    start_idx = sbatch * batch_size
-                    end_idx = min((sbatch + 1) * batch_size, num_blocks)
-                    real_batch_size = end_idx - start_idx
-                    batch_data[0:real_batch_size, ...] = scene_data[start_idx:end_idx, ...]
-                    batch_label[0:real_batch_size, ...] = scene_label[start_idx:end_idx, ...]
-                    batch_point_index[0:real_batch_size, ...] = scene_point_index[start_idx:end_idx, ...]
-                    batch_smpw[0:real_batch_size, ...] = scene_smpw[start_idx:end_idx, ...]
+            for sbatch in range(s_batch_num):
+                start_idx = sbatch * batch_size
+                end_idx = min((sbatch + 1) * batch_size, num_blocks)
+                real_batch_size = end_idx - start_idx
+                batch_data[0:real_batch_size, ...] = scene_data[start_idx:end_idx, ...]
+                batch_label[0:real_batch_size, ...] = scene_label[start_idx:end_idx, ...]
+                batch_point_index[0:real_batch_size, ...] = scene_point_index[start_idx:end_idx, ...]
+                batch_smpw[0:real_batch_size, ...] = scene_smpw[start_idx:end_idx, ...]
 
-                    torch_data = torch.Tensor(batch_data)
-                    torch_data = torch_data.float().cuda()
-                    torch_data = torch_data.transpose(2, 1)
-                    seg_pred, _ = classifier(torch_data)
-                    batch_pred_label = seg_pred.contiguous().cpu().data.max(2)[1].numpy()
+                torch_data = torch.Tensor(batch_data)
+                torch_data = torch_data.float().cuda()
+                torch_data = torch_data.transpose(2, 1)
+                seg_pred, _ = classifier(torch_data)
+                batch_pred_label = seg_pred.contiguous().cpu().data.max(2)[1].numpy()
 
-                    vote_label_pool = add_vote(vote_label_pool, batch_point_index[0:real_batch_size, ...],
-                                               batch_pred_label[0:real_batch_size, ...],
-                                               batch_smpw[0:real_batch_size, ...])
-
-            pred_label = np.argmax(vote_label_pool, 1)
+                batch_pred_label_all = batch_pred_label.reshape(-1)
+                batch_point_index_all = batch_point_index.reshape(-1)
+                batch_pred_label_plane = batch_pred_label_all[batch_pred_label_all==1]
+                batch_point_index_plane = batch_point_index_all[batch_pred_label_all==1]
+                pred_label[batch_point_index_plane] = 1
 
             for l in range(num_classes):
                 total_seen_class_tmp[l] += np.sum((whole_scene_label == l))

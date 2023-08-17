@@ -9,16 +9,18 @@ import numpy as np
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Draw results')
+    parser.add_argument('--model', type=str, default='pointnet2_sem_seg', help='Model name [default: pointnet2_sem_seg]')
     parser.add_argument('--exp_dir', type=str, default='plane_seg', help='experiment root')
     parser.add_argument('--log_dir', type=str, required=True, help='log root')
     parser.add_argument('--target_dir', type=str, required=True, help='target data root')
     parser.add_argument('--prediction_dir', type=str, required=True, help='prediction data root')
     args = parser.parse_args()
 
-    logfile_dir = 'log/' + args.exp_dir + '/' + args.log_dir + '/logs/pointnet2_sem_seg.txt'
+    logfile_dir = 'log/' + args.exp_dir + '/' + args.log_dir + '/logs/' + args.model + ".txt"
     logfile_dir = Path(logfile_dir)
     target_dir = './data_scene/' + args.target_dir + '/label'
     prediction_dir = './log/' + args.exp_dir + '/' + args.log_dir + '/' + args.prediction_dir
+    epoch = prediction_dir.split("_")[-1]
     print(target_dir)
     print(prediction_dir)
     save_dir = 'log/' + args.exp_dir + '/' + args.log_dir + '/plots'
@@ -108,7 +110,7 @@ if __name__ == '__main__':
     plt.title('Confusion matrix')
     plt.xlabel('Prediction')
     plt.ylabel('Target')
-    plt_savepath = save_dir.joinpath(f"confusion_matrix")
+    plt_savepath = save_dir.joinpath(f"confusion_matrix_{epoch}")
     plt.savefig(plt_savepath)
     plt.show()
 
