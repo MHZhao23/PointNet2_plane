@@ -35,7 +35,8 @@ def parse_args():
     parser = argparse.ArgumentParser('Model')
     parser.add_argument('--test_path', type=str, default=None, help='Rootpath of data, "./data_scene" [default: None]')
     parser.add_argument('--batch_size', type=int, default=256, help='batch size in testing [default: 32]')
-    parser.add_argument('--local_normalize', action="store_false", help='Normalize points with local coordinate [default: True]')
+    parser.add_argument('--fw', type=float, default=2.0, help='Power of labelsweight [default: 2.0]')
+    parser.add_argument('--rgb', action="store_true", help='Train with RGB channels [default: False]')
     parser.add_argument('--gpu', type=str, default='0', help='specify gpu device')
     parser.add_argument('--npoint', type=int, default=512, help='point number [default: 4096]')
     parser.add_argument('--block_size', type=float, default=0.2, help='Point Number [default: 4096]')
@@ -44,16 +45,6 @@ def parse_args():
     parser.add_argument('--num_votes', type=int, default=3, help='aggregate segmentation scores with voting [default: 5]')
     parser.add_argument('--model_epoch', type=str, default=None, help='Besy model choice [default: None]')
     return parser.parse_args()
-
-
-def add_vote(vote_label_pool, point_idx, pred_label, weight):
-    B = pred_label.shape[0]
-    N = pred_label.shape[1]
-    for b in range(B):
-        for n in range(N):
-            if weight[b, n] != 0 and not np.isinf(weight[b, n]):
-                vote_label_pool[int(point_idx[b, n]), int(pred_label[b, n])] += 1
-    return vote_label_pool
 
 
 def main(args):
@@ -92,13 +83,17 @@ def main(args):
 
     '''DATASET LOADING'''
     log_string("start loading testing data ...")
-    test_scene_set = SceneLabelledData(args.test_path, num_classes, num_points, block_size, normalized=args.local_normalize)
+    test_scene_set = SceneLabelledData(args.test_path, num_classes, num_points, block_size, fw=args.fw, rgb=args.rgb)
     log_string("using {} scene for testing.".format(test_scene_set.__len__()))
 
     '''MODEL LOADING'''
     model_name = os.listdir(experiment_dir + '/logs')[0].split('.')[0]
     MODEL = importlib.import_module(model_name)
-    classifier = MODEL.get_model(num_classes).cuda()
+    if args.rgb:
+        in_channels = 9
+    else:
+        in_channels = 6
+    classifier = MODEL.get_model(in_channels, num_classes).to(device)
     if args.model_epoch is None:
         checkpoint = torch.load(str(experiment_dir) + '/checkpoints/best_model.pth')
     else:
@@ -128,12 +123,11 @@ def main(args):
 
             whole_scene_data = test_scene_set.scene_points_list[batch_idx]
             whole_scene_label = test_scene_set.semantic_labels_list[batch_idx]
-            vote_label_pool = np.zeros((whole_scene_label.shape[0], num_classes))
             pred_label = np.zeros(whole_scene_data.shape[0], dtype=int)
             scene_data, scene_label, scene_smpw, scene_point_index = test_scene_set[batch_idx]
             num_blocks = scene_data.shape[0]
             s_batch_num = (num_blocks + batch_size - 1) // batch_size
-            batch_data = np.zeros((batch_size, num_points, 6))
+            batch_data = np.zeros((batch_size, num_points, in_channels))
 
             batch_label = np.zeros((batch_size, num_points))
             batch_point_index = np.zeros((batch_size, num_points), dtype=int)
@@ -182,7 +176,7 @@ def main(args):
                 non_plane_colors = np.array([[166/255.0, 206/255.0, 227/255.0]])
 
                 gt_pcd = o3d.geometry.PointCloud()
-                gt_pcd.points = o3d.utility.Vector3dVector(whole_scene_data)
+                gt_pcd.points = o3d.utility.Vector3dVector(whole_scene_data[:, :3])
                 points_num = whole_scene_data.shape[0]
                 # paint the gt point cloud
                 gt_colors = np.repeat(non_plane_colors, points_num, axis=0)
@@ -193,7 +187,7 @@ def main(args):
                 o3d.io.write_point_cloud(pcd_path, gt_pcd)
 
                 pred_pcd = o3d.geometry.PointCloud()
-                pred_pcd.points = o3d.utility.Vector3dVector(whole_scene_data)
+                pred_pcd.points = o3d.utility.Vector3dVector(whole_scene_data[:, :3])
                 points_num = whole_scene_data.shape[0]
                 # paint the pred point cloud
                 pred_colors = np.repeat(non_plane_colors, points_num, axis=0)

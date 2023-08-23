@@ -16,45 +16,6 @@ import open3d as o3d
 
 
 if __name__ == "__main__":
-    # args = parse_args()
-    # main(args)
-
-
-    # ## -------------- script 1 --------------
-    # pcd_file = "./data/cloud/fast_cloud.pcd"
-    # normal_file = "./data/normal/normals.txt"
-    # label_file = "./data/label/labels.txt"
-    # plane_file = "./data/plane/planes.txt"
-
-    # t0 = time.time()
-    # pcd = o3d.io.read_point_cloud(pcd_file)
-    # points = np.asarray(pcd.points)
-
-    # t1 = time.time()
-    # with open(normal_file) as f:
-    #     lines = f.readlines()
-    # normals = np.zeros((len(lines), 3))
-    # for i in range(len(lines)):
-    #     normal_str = re.split(",|\n", lines[i])
-    #     normal = np.asarray([float(n) for n in normal_str[:-1]])
-    #     normals[i] = normal
-
-    # t2 = time.time()
-    # with open(label_file) as f:
-    #     lines = f.readlines()
-    # label = np.asarray([int(l[0]) for l in lines]).reshape(-1, 1)
-
-    # t3 = time.time()
-    # with open(plane_file) as f:
-    #     lines = f.readlines()
-    # planes = dict()
-    # for line in lines:
-    #     line = line.split()
-    #     plane_params = [float(l) for l in line[1:]]
-    #     planes[int(line[0])] = plane_params
-
-    # t4 = time.time()
-    # print(t4-t3, t3-t2, t2-t1, t1-t0)
 
     # ## -------------- show pcd --------------
     # folder = "unlabelled"
@@ -72,7 +33,7 @@ if __name__ == "__main__":
 
     # folder = "labelled"
     # epoch = 63
-    # exp_folder = "pointnet2_real_data_0815"
+    # exp_folder = "pointnet2_real_data_0823_xyzrgb"
     # root_folder = f"eval_{folder}_{epoch}"
     # root_path = os.path.join(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/", root_folder)
     # file_list = sorted(os.listdir(root_path))
@@ -86,6 +47,33 @@ if __name__ == "__main__":
     #     pcd_f = predpcd_file[i]
     #     pcd = o3d.io.read_point_cloud(pcd_f)
     #     o3d.visualization.draw_geometries([pcd])
+
+    # # # # TODO: visualize with different colours
+    # cloud_path = "./data_scene/crop_data/cloud"
+    # cloud_filename = sorted(os.listdir(cloud_path))
+    # cloud_files = [os.path.join(cloud_path, filename) for filename in cloud_filename]
+
+    # label_path = "./data_scene/crop_data/label"
+    # label_filename = sorted(os.listdir(label_path))
+    # label_files = [os.path.join(label_path, filename) for filename in label_filename]
+    # assert len(cloud_files) == len(label_files)
+
+    # for i in range(len(cloud_files)):
+    #     # load point cloud
+    #     pcd = o3d.io.read_point_cloud(cloud_files[i])
+    #     points_num = np.asarray(pcd.points).shape[0]
+
+    #     # load labels
+    #     labels = np.load(label_files[i])
+
+    #     # paint the point cloud
+    #     plane_colors = np.array([[51/255.0, 160/255.0, 44/255.0]])
+    #     non_plane_colors = np.array([[166/255.0, 206/255.0, 227/255.0]])
+    #     gt_colors = np.repeat(non_plane_colors, points_num, axis=0)
+    #     gt_colors[labels==1] = plane_colors
+    #     pcd.colors = o3d.Vector3dVector(gt_colors)
+    #     o3d.visualization.draw_geometries([pcd])
+    # #     break
 
     # # TODO: Compare the results
     # rootpath = "./data_scene/results"
@@ -212,7 +200,7 @@ if __name__ == "__main__":
     #     o3d.visualization.draw_geometries([pred_pcd])
 
     # # TODO: compute the percentage of planes and non-planes (gt)
-    # rootpath = "./data_scene"
+    # rootpath = "./data_scene/crop_data"
     # label_path = os.path.join(rootpath, "label")
     # label_filename = sorted(os.listdir(label_path))
     # label_files = [os.path.join(label_path, filename) for filename in label_filename]
@@ -221,11 +209,7 @@ if __name__ == "__main__":
     # gt_nonplane_num = 0
     # for i in range(len(label_files)):
     #     # load labels
-    #     with open(label_files[i]) as f:
-    #         lines = f.readlines()
-    #     # 0 for non-plane, 1 for plane
-    #     l_labels = [int(l[0]) if int(l[0]) == 0 else 1 for l in lines]
-    #     labels = np.asarray(l_labels)
+    #     labels = np.load(label_files[i])
 
     #     gt_plane_num += labels[labels == 1].shape[0]
     #     gt_nonplane_num += labels[labels == 0].shape[0]

@@ -1,0 +1,147 @@
+2023-08-23 21:27:45,463 - Model - INFO - PARAMETER ...
+2023-08-23 21:27:45,463 - Model - INFO - Namespace(batch_size=128, block_size=0.2, decay_rate=0.0001, epoch=64, fw=2.0, gpu='0', learning_rate=0.001, log_dir='pointnet2_real_data_0823_partsem_xyz', lr_decay=0.7, model='pointnet2_part_seg_msg', npoint=512, optimizer='Adam', rgb=False, step_size=10, test_path='./data_scene/crop_testdata', train_path='./data_scene/crop_data', transfer=False)
+2023-08-23 21:27:45,465 - Model - INFO - using cuda:0 device.
+2023-08-23 21:27:45,465 - Model - INFO - 
+
+>>>>>>>> DATASET LOADING <<<<<<<<
+2023-08-23 21:27:45,465 - Model - INFO - start loading training data ...
+2023-08-23 21:27:45,990 - Model - INFO - using 5683 samples for training.
+2023-08-23 21:27:46,399 - Model - INFO - 
+start loading testing data ...
+2023-08-23 21:27:46,426 - Model - INFO - using 294 samples for testing.
+2023-08-23 21:27:46,427 - Model - INFO - 
+
+>>>>>>>> MODEL LOADING <<<<<<<<
+2023-08-23 21:27:46,441 - Model - INFO - No existing model, starting training from scratch...
+2023-08-23 21:27:46,442 - Model - INFO - 
+
+>>>>>>>> TRAINING & TESTING <<<<<<<<
+2023-08-23 21:27:46,442 - Model - INFO - **** Epoch 1 (1/64) ****
+2023-08-23 21:27:46,442 - Model - INFO - Learning rate:0.001000
+2023-08-23 21:33:47,454 - Model - INFO - PARAMETER ...
+2023-08-23 21:33:47,454 - Model - INFO - Namespace(batch_size=128, block_size=0.2, decay_rate=0.0001, epoch=64, fw=2.0, gpu='0', learning_rate=0.001, log_dir='pointnet2_real_data_0823_partsem_xyz', lr_decay=0.7, model='pointnet2_part_seg_msg', npoint=512, optimizer='Adam', rgb=False, step_size=10, test_path='./data_scene/crop_testdata', train_path='./data_scene/crop_data', transfer=False)
+2023-08-23 21:33:47,456 - Model - INFO - using cuda:0 device.
+2023-08-23 21:33:47,456 - Model - INFO - 
+
+>>>>>>>> DATASET LOADING <<<<<<<<
+2023-08-23 21:33:47,456 - Model - INFO - start loading training data ...
+2023-08-23 21:33:47,969 - Model - INFO - using 5683 samples for training.
+2023-08-23 21:33:48,341 - Model - INFO - 
+start loading testing data ...
+2023-08-23 21:33:48,369 - Model - INFO - using 294 samples for testing.
+2023-08-23 21:33:48,369 - Model - INFO - 
+
+>>>>>>>> MODEL LOADING <<<<<<<<
+2023-08-23 21:33:48,383 - Model - INFO - No existing model, starting training from scratch...
+2023-08-23 21:33:48,383 - Model - INFO - 
+
+>>>>>>>> TRAINING & TESTING <<<<<<<<
+2023-08-23 21:33:48,383 - Model - INFO - **** Epoch 1 (1/64) ****
+2023-08-23 21:33:48,383 - Model - INFO - Learning rate:0.001000
+2023-08-23 21:34:18,964 - Model - INFO - PARAMETER ...
+2023-08-23 21:34:18,964 - Model - INFO - Namespace(batch_size=128, block_size=0.2, decay_rate=0.0001, epoch=64, fw=2.0, gpu='0', learning_rate=0.001, log_dir='pointnet2_real_data_0823_partsem_xyz', lr_decay=0.7, model='pointnet2_part_seg_msg', npoint=512, optimizer='Adam', rgb=False, step_size=10, test_path='./data_scene/crop_testdata', train_path='./data_scene/crop_data', transfer=False)
+2023-08-23 21:34:18,966 - Model - INFO - using cuda:0 device.
+2023-08-23 21:34:18,966 - Model - INFO - 
+
+>>>>>>>> DATASET LOADING <<<<<<<<
+2023-08-23 21:34:18,966 - Model - INFO - start loading training data ...
+2023-08-23 21:34:19,507 - Model - INFO - using 5683 samples for training.
+2023-08-23 21:34:19,892 - Model - INFO - 
+start loading testing data ...
+2023-08-23 21:34:19,921 - Model - INFO - using 294 samples for testing.
+2023-08-23 21:34:19,921 - Model - INFO - 
+
+>>>>>>>> MODEL LOADING <<<<<<<<
+2023-08-23 21:34:19,936 - Model - INFO - No existing model, starting training from scratch...
+2023-08-23 21:34:19,936 - Model - INFO - 
+
+>>>>>>>> TRAINING & TESTING <<<<<<<<
+2023-08-23 21:34:19,936 - Model - INFO - **** Epoch 1 (1/64) ****
+2023-08-23 21:34:19,936 - Model - INFO - Learning rate:0.001000
+2023-08-23 21:34:40,839 - Model - INFO - PARAMETER ...
+2023-08-23 21:34:40,839 - Model - INFO - Namespace(batch_size=128, block_size=0.2, decay_rate=0.0001, epoch=64, fw=2.0, gpu='0', learning_rate=0.001, log_dir='pointnet2_real_data_0823_partsem_xyz', lr_decay=0.7, model='pointnet2_part_seg_msg', npoint=512, optimizer='Adam', rgb=False, step_size=10, test_path='./data_scene/crop_testdata', train_path='./data_scene/crop_data', transfer=False)
+2023-08-23 21:34:40,841 - Model - INFO - using cuda:0 device.
+2023-08-23 21:34:40,841 - Model - INFO - 
+
+>>>>>>>> DATASET LOADING <<<<<<<<
+2023-08-23 21:34:40,841 - Model - INFO - start loading training data ...
+2023-08-23 21:35:16,305 - Model - INFO - PARAMETER ...
+2023-08-23 21:35:16,305 - Model - INFO - Namespace(batch_size=128, block_size=0.2, decay_rate=0.0001, epoch=64, fw=2.0, gpu='0', learning_rate=0.001, log_dir='pointnet2_real_data_0823_partsem_xyz', lr_decay=0.7, model='pointnet2_part_seg_msg', npoint=512, optimizer='Adam', rgb=False, step_size=10, test_path='./data_scene/crop_testdata', train_path='./data_scene/crop_data', transfer=False)
+2023-08-23 21:35:16,307 - Model - INFO - using cuda:0 device.
+2023-08-23 21:35:16,307 - Model - INFO - 
+
+>>>>>>>> DATASET LOADING <<<<<<<<
+2023-08-23 21:35:16,307 - Model - INFO - start loading training data ...
+2023-08-23 21:35:16,846 - Model - INFO - using 5683 samples for training.
+2023-08-23 21:35:17,233 - Model - INFO - 
+start loading testing data ...
+2023-08-23 21:35:17,261 - Model - INFO - using 294 samples for testing.
+2023-08-23 21:35:17,261 - Model - INFO - 
+
+>>>>>>>> MODEL LOADING <<<<<<<<
+2023-08-23 21:35:17,275 - Model - INFO - No existing model, starting training from scratch...
+2023-08-23 21:35:17,275 - Model - INFO - 
+
+>>>>>>>> TRAINING & TESTING <<<<<<<<
+2023-08-23 21:35:17,275 - Model - INFO - **** Epoch 1 (1/64) ****
+2023-08-23 21:35:17,275 - Model - INFO - Learning rate:0.001000
+2023-08-23 21:38:22,227 - Model - INFO - PARAMETER ...
+2023-08-23 21:38:22,227 - Model - INFO - Namespace(batch_size=128, block_size=0.2, decay_rate=0.0001, epoch=64, fw=2.0, gpu='0', learning_rate=0.001, log_dir='pointnet2_real_data_0823_partsem_xyz', lr_decay=0.7, model='pointnet2_part_seg_msg', npoint=512, optimizer='Adam', rgb=False, step_size=10, test_path='./data_scene/crop_testdata', train_path='./data_scene/crop_data', transfer=False)
+2023-08-23 21:38:22,229 - Model - INFO - using cuda:0 device.
+2023-08-23 21:38:22,229 - Model - INFO - 
+
+>>>>>>>> DATASET LOADING <<<<<<<<
+2023-08-23 21:38:22,229 - Model - INFO - start loading training data ...
+2023-08-23 21:38:22,762 - Model - INFO - using 5683 samples for training.
+2023-08-23 21:38:23,136 - Model - INFO - 
+start loading testing data ...
+2023-08-23 21:38:23,165 - Model - INFO - using 294 samples for testing.
+2023-08-23 21:38:23,165 - Model - INFO - 
+
+>>>>>>>> MODEL LOADING <<<<<<<<
+2023-08-23 21:38:23,179 - Model - INFO - No existing model, starting training from scratch...
+2023-08-23 21:38:23,179 - Model - INFO - 
+
+>>>>>>>> TRAINING & TESTING <<<<<<<<
+2023-08-23 21:38:23,179 - Model - INFO - **** Epoch 1 (1/64) ****
+2023-08-23 21:38:23,179 - Model - INFO - Learning rate:0.001000
+2023-08-23 21:38:35,108 - Model - INFO - PARAMETER ...
+2023-08-23 21:38:35,108 - Model - INFO - Namespace(batch_size=64, block_size=0.2, decay_rate=0.0001, epoch=64, fw=2.0, gpu='0', learning_rate=0.001, log_dir='pointnet2_real_data_0823_partsem_xyz', lr_decay=0.7, model='pointnet2_part_seg_msg', npoint=512, optimizer='Adam', rgb=False, step_size=10, test_path='./data_scene/crop_testdata', train_path='./data_scene/crop_data', transfer=False)
+2023-08-23 21:38:35,110 - Model - INFO - using cuda:0 device.
+2023-08-23 21:38:35,110 - Model - INFO - 
+
+>>>>>>>> DATASET LOADING <<<<<<<<
+2023-08-23 21:38:35,110 - Model - INFO - start loading training data ...
+2023-08-23 21:38:35,635 - Model - INFO - using 5683 samples for training.
+2023-08-23 21:38:36,008 - Model - INFO - 
+start loading testing data ...
+2023-08-23 21:38:36,036 - Model - INFO - using 294 samples for testing.
+2023-08-23 21:38:36,036 - Model - INFO - 
+
+>>>>>>>> MODEL LOADING <<<<<<<<
+2023-08-23 21:38:36,051 - Model - INFO - No existing model, starting training from scratch...
+2023-08-23 21:38:36,051 - Model - INFO - 
+
+>>>>>>>> TRAINING & TESTING <<<<<<<<
+2023-08-23 21:38:36,051 - Model - INFO - **** Epoch 1 (1/64) ****
+2023-08-23 21:38:36,051 - Model - INFO - Learning rate:0.001000
+2023-08-23 21:38:50,891 - Model - INFO - PARAMETER ...
+2023-08-23 21:38:50,891 - Model - INFO - Namespace(batch_size=32, block_size=0.2, decay_rate=0.0001, epoch=64, fw=2.0, gpu='0', learning_rate=0.001, log_dir='pointnet2_real_data_0823_partsem_xyz', lr_decay=0.7, model='pointnet2_part_seg_msg', npoint=512, optimizer='Adam', rgb=False, step_size=10, test_path='./data_scene/crop_testdata', train_path='./data_scene/crop_data', transfer=False)
+2023-08-23 21:38:50,893 - Model - INFO - using cuda:0 device.
+2023-08-23 21:38:50,893 - Model - INFO - 
+
+>>>>>>>> DATASET LOADING <<<<<<<<
+2023-08-23 21:38:50,893 - Model - INFO - start loading training data ...
+2023-08-23 21:38:51,413 - Model - INFO - using 5683 samples for training.
+2023-08-23 21:38:51,795 - Model - INFO - 
+start loading testing data ...
+2023-08-23 21:38:51,822 - Model - INFO - using 294 samples for testing.
+2023-08-23 21:38:51,822 - Model - INFO - 
+
+>>>>>>>> MODEL LOADING <<<<<<<<
+2023-08-23 21:38:51,836 - Model - INFO - No existing model, starting training from scratch...
+2023-08-23 21:38:51,837 - Model - INFO - 
+
+>>>>>>>> TRAINING & TESTING <<<<<<<<
+2023-08-23 21:38:51,837 - Model - INFO - **** Epoch 1 (1/64) ****
+2023-08-23 21:38:51,837 - Model - INFO - Learning rate:0.001000
