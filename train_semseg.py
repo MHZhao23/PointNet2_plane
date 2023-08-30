@@ -176,17 +176,21 @@ def main(args):
         classifier = classifier.apply(weights_init)
         if args.transfer == True:
             log_string('No existing model, using transfer learning...')
-            transfer_model = torch.load('./weights/semseg_model.pth')
+            if args.rgb:
+                transfer_model = torch.load('./weights/semseg_xyzrgb.pth')
+            else:
+                transfer_model = torch.load('./weights/semseg_xyz.pth')
             classifier_state_dict = classifier.state_dict()
             for key in transfer_model['model_state_dict'].keys():
                 if key in classifier_state_dict.keys():
                     if transfer_model['model_state_dict'][key].shape == classifier_state_dict[key].shape:
+                        print(key)
                         classifier_state_dict[key] = transfer_model['model_state_dict'][key]
         else:
             log_string('No existing model, starting training from scratch...')
 
     if args.transfer == True:
-        require_grad_layer = ["sa1", "conv1", "conv2"]
+        require_grad_layer = ["sa1", "fp1", "conv1", "conv2"]
         for param in classifier.named_parameters():
             if param[0][:3] in require_grad_layer or param[0][:5] in require_grad_layer:
                 param[1].requires_grad = True

@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import seaborn as sn
 import pandas as pd
 import numpy as np
+import open3d as o3d
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Draw results')
@@ -50,34 +52,25 @@ if __name__ == '__main__':
             test_iou_list.append(float(l[-1]))
     assert len(train_loss_list) == len(test_loss_list) == len(train_acc_list) == len(test_acc_list) ==len(test_iou_list)
     
-    plt.plot(list(range(1, len(train_loss_list) + 1)), train_loss_list, 'r--',label='train mean loss')
-    plt.plot(list(range(1, len(train_loss_list) + 1)), test_loss_list, 'b--',label='test mean loss')
-    plt.title('Mean Loss during Training and Testing')
+    plt.plot(list(range(1, len(train_loss_list) + 1)), train_loss_list, 'r--',label='Loss on the training set')
+    plt.plot(list(range(1, len(train_loss_list) + 1)), test_loss_list, 'b--',label='Loss on the testing set')
+    plt.title('The Negative Log Likelihood Loss during Training')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt_savepath = save_dir.joinpath(f"Mean Loss")
+    plt_savepath = save_dir.joinpath(f"Loss")
     plt.savefig(plt_savepath)
     plt.show()
 
-    plt.plot(list(range(1, len(train_loss_list) + 1)), train_acc_list, 'g--',label='train accuracy')
-    plt.plot(list(range(1, len(train_loss_list) + 1)), test_acc_list, 'y--',label='test accuracy')
-    plt.title('Accuracy during Training and Testing')
+    plt.plot(list(range(1, len(train_loss_list) + 1)), train_acc_list, 'g--',label='Accuracy on the training set')
+    plt.plot(list(range(1, len(train_loss_list) + 1)), test_acc_list, 'y--',label='Accuracy on the testing set')
+    plt.title('Accuracy during Training')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy (%)')
     plt.legend()
     plt_savepath = save_dir.joinpath(f"Accuracy")
     plt.savefig(plt_savepath)
     plt.show()
-
-    plt.plot(list(range(1, len(train_loss_list) + 1)), test_iou_list)
-    plt.title('Average class IoU during Testing')
-    plt.xlabel('Epoch')
-    plt.ylabel('IOU')
-    plt_savepath = save_dir.joinpath(f"IOU")
-    plt.savefig(plt_savepath)
-    plt.show()
-
 
     target_filenames = sorted(os.listdir(target_dir))
     target_files = [os.path.join(target_dir, filename) for filename in target_filenames if filename.endswith("npy")]
@@ -107,19 +100,22 @@ if __name__ == '__main__':
         for j in range(2):
             c = cf[i,j]
             ax.text(j, i, str(c), va='center', ha='center')
-    plt.title('Confusion matrix')
+    plt.title('Confusion Matrix on the Testing set')
     plt.xlabel('Prediction')
     plt.ylabel('Target')
-    plt_savepath = save_dir.joinpath(f"confusion_matrix_{epoch}")
+    plt_savepath = save_dir.joinpath("confusion_matrix")
     plt.savefig(plt_savepath)
     plt.show()
 
-    # array = [[TP / (total_num * 1.0), FN / (total_num * 1.0)],
-    #          [FP / (total_num * 1.0), TN / (total_num * 1.0)]]
+    root_path = f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/{args.exp_dir}/{args.log_dir}/{args.prediction_dir}"
+    file_list = sorted(os.listdir(root_path))
+    gtpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("gt.pcd")]
+    predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
+    for i in range(len(predpcd_file)):
+        pcd_f = gtpcd_file[i]
+        pcd = o3d.io.read_point_cloud(pcd_f)
+        o3d.visualization.draw_geometries([pcd])
 
-    # df_cm = pd.DataFrame(array, range(1, -1, -1), range(1, -1, -1))
-    # # plt.figure(figsize=(10,7))
-    # sn.set(font_scale=1.4) # for label size
-    # sn.heatmap(df_cm, annot=True, annot_kws={"size": 16}) # font size
-
-    # plt.show()
+        pcd_f = predpcd_file[i]
+        pcd = o3d.io.read_point_cloud(pcd_f)
+        o3d.visualization.draw_geometries([pcd])

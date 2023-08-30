@@ -1,0 +1,57 @@
+2023-08-27 14:11:25,710 - Model - INFO - PARAMETER ...
+2023-08-27 14:11:25,710 - Model - INFO - Namespace(batch_size=256, block_size=0.2, fw=2.0, gpu='0', log_dir='pointnet2_real_data_0827_xyz', model_epoch='63', npoint=512, num_votes=3, rgb=False, test_path='./data_scene/crop_testdata', visual=True)
+2023-08-27 14:11:25,719 - Model - INFO - using cuda:0 device.
+2023-08-27 14:11:25,719 - Model - INFO - start loading testing data ...
+2023-08-27 14:11:25,741 - Model - INFO - using 6 scene for testing.
+2023-08-27 14:11:26,142 - Model - INFO - ---- EVALUATION WHOLE SCENE----
+2023-08-27 14:11:27,053 - Model - INFO - Mean IoU of scene1_12: 0.6272
+2023-08-27 14:11:27,324 - Model - INFO - Mean IoU of scene3_15: 0.5036
+2023-08-27 14:11:27,674 - Model - INFO - Mean IoU of scene6_21: 0.6772
+2023-08-27 14:11:28,039 - Model - INFO - Mean IoU of scene7_9: 0.6115
+2023-08-27 14:11:28,207 - Model - INFO - Mean IoU of scene8_4: 0.7085
+2023-08-27 14:11:28,476 - Model - INFO - Mean IoU of testscene25_19: 0.5297
+2023-08-27 14:11:28,478 - Model - INFO - ------- IoU --------
+class non-plane     , IoU: 0.416 
+class plane         , IoU: 0.821 
+
+2023-08-27 14:11:28,478 - Model - INFO - eval point avg class IoU: 0.618602
+2023-08-27 14:11:28,478 - Model - INFO - eval whole scene point avg class acc: 0.732733
+2023-08-27 14:11:28,478 - Model - INFO - eval whole scene point accuracy: 0.841082
+2023-08-28 17:01:02,809 - Model - INFO - PARAMETER ...
+2023-08-28 17:01:02,809 - Model - INFO - Namespace(batch_size=256, block_size=0.2, fw=2.0, gpu='0', log_dir='pointnet2_real_data_0827_xyz', model_epoch='63', npoint=512, num_votes=3, rgb=False, test_path='./data_scene/crop_testdata', visual=True)
+2023-08-28 17:01:02,836 - Model - INFO - using cuda:0 device.
+2023-08-28 17:01:02,836 - Model - INFO - start loading testing data ...
+2023-08-28 17:01:02,860 - Model - INFO - using 6 scene for testing.
+2023-08-28 17:01:03,443 - Model - INFO - ---- EVALUATION WHOLE SCENE----
+2023-08-28 17:01:04,834 - Model - INFO - Mean IoU of scene1_12: 0.6295
+2023-08-28 17:01:05,291 - Model - INFO - Mean IoU of scene3_15: 0.5079
+2023-08-28 17:01:05,830 - Model - INFO - Mean IoU of scene6_21: 0.6382
+2023-08-28 17:01:06,402 - Model - INFO - Mean IoU of scene7_9: 0.6282
+2023-08-28 17:01:06,683 - Model - INFO - Mean IoU of scene8_4: 0.7116
+2023-08-28 17:01:07,150 - Model - INFO - Mean IoU of testscene25_19: 0.5357
+2023-08-28 17:01:07,153 - Model - INFO - ------- IoU --------
+class non-plane     , IoU: 0.413 
+class plane         , IoU: 0.819 
+
+2023-08-28 17:01:07,153 - Model - INFO - eval point avg class IoU: 0.615632
+2023-08-28 17:01:07,154 - Model - INFO - eval whole scene point avg class acc: 0.730698
+2023-08-28 17:01:07,154 - Model - INFO - eval whole scene point accuracy: 0.839180
+2023-08-28 17:01:15,307 - Model - INFO - PARAMETER ...
+2023-08-28 17:01:15,307 - Model - INFO - Namespace(batch_size=256, block_size=0.2, fw=2.0, gpu='0', log_dir='pointnet2_real_data_0827_xyz', model_epoch='63', npoint=512, num_votes=3, rgb=False, test_path='./data_scene/crop_testdata', visual=True)
+2023-08-28 17:01:15,328 - Model - INFO - using cuda:0 device.
+2023-08-28 17:01:15,328 - Model - INFO - start loading testing data ...
+2023-08-28 17:01:15,351 - Model - INFO - using 6 scene for testing.
+2023-08-28 17:01:15,849 - Model - INFO - ---- EVALUATION WHOLE SCENE----
+2023-08-28 17:01:17,238 - Model - INFO - Mean IoU of scene1_12: 0.6325
+2023-08-28 17:01:17,691 - Model - INFO - Mean IoU of scene3_15: 0.5169
+2023-08-28 17:01:18,236 - Model - INFO - Mean IoU of scene6_21: 0.6551
+2023-08-28 17:01:18,810 - Model - INFO - Mean IoU of scene7_9: 0.6244
+2023-08-28 17:01:19,075 - Model - INFO - Mean IoU of scene8_4: 0.7127
+2023-08-28 17:01:19,543 - Model - INFO - Mean IoU of testscene25_19: 0.5328
+2023-08-28 17:01:19,546 - Model - INFO - ------- IoU --------
+class non-plane     , IoU: 0.419 
+class plane         , IoU: 0.822 
+
+2023-08-28 17:01:19,546 - Model - INFO - eval point avg class IoU: 0.620711
+2023-08-28 17:01:19,546 - Model - INFO - eval whole scene point avg class acc: 0.734064
+2023-08-28 17:01:19,546 - Model - INFO - eval whole scene point accuracy: 0.842481

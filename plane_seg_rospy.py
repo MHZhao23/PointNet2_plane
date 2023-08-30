@@ -50,14 +50,11 @@ def SceneUnlabelledData(points, num_classes, num_point, block_size, padding=0.00
             point_idxs = np.concatenate((point_idxs, point_idxs_repeat))
             np.random.shuffle(point_idxs)
             data_batch = points[point_idxs, :]
-            # Normalized method 1:
-            normlized_xyz = np.zeros((point_size, 3))
-            normlized_xyz[:, 0] = data_batch[:, 0] / coord_max[0]
-            normlized_xyz[:, 1] = data_batch[:, 1] / coord_max[1]
-            normlized_xyz[:, 2] = data_batch[:, 2] / coord_max[2]
-            data_batch[:, 0] = data_batch[:, 0] - (s_x + block_size / 2.0)
-            data_batch[:, 1] = data_batch[:, 1] - (s_y + block_size / 2.0)
+            data_batch[:, 0] = data_batch[:, 0] - (s_x + stride)
+            data_batch[:, 1] = data_batch[:, 1] - (s_y + stride)
             data_batch[:, 2] = data_batch[:, 2] - np.mean(data_batch[:, 2])
+            normlized_xyz = data_batch[:, :3] - np.amin(data_batch[:, :3], axis=0)
+            normlized_xyz = normlized_xyz / np.amax(normlized_xyz, axis=0)
             data_batch = np.concatenate((data_batch, normlized_xyz), axis=1)
 
             data_scene = np.vstack([data_scene, data_batch]) if data_scene.size else data_batch
@@ -370,11 +367,10 @@ class PointNetFeaturePropagation(nn.Module):
 class get_model(nn.Module):
     def __init__(self, num_classes):
         super(get_model, self).__init__()
-        self.sa1 = PointNetSetAbstraction(1024, 0.1, 32, 6 + 3, [32, 32, 64], False)
-        self.sa2 = PointNetSetAbstraction(256, 0.2, 32, 64 + 3, [64, 64, 128], False)
-        self.sa3 = PointNetSetAbstraction(64, 0.4, 32, 128 + 3, [128, 128, 256], False)
-        self.sa4 = PointNetSetAbstraction(16, 0.8, 32, 256 + 3, [256, 256, 512], False)
-        self.fp4 = PointNetFeaturePropagation(768, [256, 256])
+        
+        self.sa1 = PointNetSetAbstraction(256, 0.1, 32, 6 + 3, [32, 32, 64], False)
+        self.sa2 = PointNetSetAbstraction(64, 0.2, 32, 64 + 3, [64, 64, 128], False)
+        self.sa3 = PointNetSetAbstraction(16, 0.4, 32, 128 + 3, [128, 128, 256], False)
         self.fp3 = PointNetFeaturePropagation(384, [256, 256])
         self.fp2 = PointNetFeaturePropagation(320, [256, 128])
         self.fp1 = PointNetFeaturePropagation(128, [128, 128, 128])
@@ -390,9 +386,7 @@ class get_model(nn.Module):
         l1_xyz, l1_points = self.sa1(l0_xyz, l0_points)
         l2_xyz, l2_points = self.sa2(l1_xyz, l1_points)
         l3_xyz, l3_points = self.sa3(l2_xyz, l2_points)
-        l4_xyz, l4_points = self.sa4(l3_xyz, l3_points)
 
-        l3_points = self.fp4(l3_xyz, l4_xyz, l3_points, l4_points)
         l2_points = self.fp3(l2_xyz, l3_xyz, l2_points, l3_points)
         l1_points = self.fp2(l1_xyz, l2_xyz, l1_points, l2_points)
         l0_points = self.fp1(l0_xyz, l1_xyz, None, l1_points)
@@ -401,7 +395,7 @@ class get_model(nn.Module):
         x = self.conv2(x)
         x = F.log_softmax(x, dim=1)
         x = x.permute(0, 2, 1)
-        return x, l4_points
+        return x, l3_points
 
 def callback(points):
     coor_min = np.amin(points, axis=0)
@@ -412,7 +406,7 @@ def callback(points):
 
     '''MODEL LOADING'''
     num_classes = 2
-    model_dir = "/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data_0815/checkpoints/best_models/best_model_63.pth"
+    model_dir = "/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data_0827_xyz/checkpoints/best_models/best_model_63.pth"
     classifier = get_model(num_classes).to(device)
     checkpoint = torch.load(model_dir, map_location=torch.device('cpu'))
     classifier.load_state_dict(checkpoint['model_state_dict'])
@@ -421,13 +415,13 @@ def callback(points):
     '''INFERRENCE'''
     num_votes = 3
     batch_size = 256
-    num_points = 256
-    block_size = 0.1
+    num_points = 512
+    block_size = 0.2
     nn_time = 0.0
     infer_start = time.time()
 
     with torch.no_grad():
-        pred_label = np.zeros((points.shape[0], 1), dtype=int)
+        pred_label = np.zeros((points.shape[0]), dtype=int)
         scene_data, scene_point_index = SceneUnlabelledData(points, num_classes, num_points, block_size)
         num_blocks = scene_data.shape[0]
         s_batch_num = (num_blocks + batch_size - 1) // batch_size
@@ -465,22 +459,23 @@ def callback(points):
         print("Inference cost: ", infer_end - infer_start)
 
 
-    # # colors
-    # plane_colors = np.array([[51/255.0, 160/255.0, 44/255.0]])
-    # non_plane_colors = np.array([[166/255.0, 206/255.0, 227/255.0]])
-    # pred_pcd = o3d.geometry.PointCloud()
-    # pred_pcd.points = o3d.utility.Vector3dVector(points)
-    # points_num = points.shape[0]
-    # # paint the pred point cloud
-    # pred_colors = np.repeat(non_plane_colors, points_num, axis=0)
-    # pred_colors[pred_label==1] = plane_colors
-    # pred_pcd.colors = o3d.Vector3dVector(pred_colors)
-    # o3d.visualization.draw_geometries([pred_pcd])
+    print(pred_label[pred_label==1].shape)
+    # colors
+    plane_colors = np.array([[51/255.0, 160/255.0, 44/255.0]])
+    non_plane_colors = np.array([[166/255.0, 206/255.0, 227/255.0]])
+    pred_pcd = o3d.geometry.PointCloud()
+    pred_pcd.points = o3d.utility.Vector3dVector(points)
+    points_num = points.shape[0]
+    # paint the pred point cloud
+    pred_colors = np.repeat(non_plane_colors, points_num, axis=0)
+    pred_colors[pred_label==1] = plane_colors
+    pred_pcd.colors = o3d.Vector3dVector(pred_colors)
+    o3d.visualization.draw_geometries([pred_pcd])
 
 
 if __name__ == '__main__':
     # ---------- subscribe ----------
-    root_path = f"./data_scene/testcloud"
+    root_path = f"./data_scene/crop_testdata/cloud"
     file_list = os.listdir(root_path)
     pcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith(".pcd")]
     for i in range(len(pcd_file)):

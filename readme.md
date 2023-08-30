@@ -27,7 +27,7 @@ Run the following command to train a plane segmentation model with real scene
 python train_semseg.py --model pointnet2_sem_seg --train_path "./data_scene/crop_data" --test_path "./data_scene/crop_testdata" --batch_size 128 --epoch 64 --log_dir pointnet2_real_data --transfer
 ```
 
-If the model is trained from scratch, add one argument ```--transfer```, for example
+If the model is trained from scratch, do not add argument ```--transfer```, for example
 ```
 python train_semseg.py --model pointnet2_sem_seg --train_path "./data_scene/crop_data" --test_path "./data_scene/crop_testdata" --batch_size 128 --epoch 64 --log_dir pointnet2_real_data
 

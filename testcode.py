@@ -48,6 +48,21 @@ if __name__ == "__main__":
     #     pcd = o3d.io.read_point_cloud(pcd_f)
     #     o3d.visualization.draw_geometries([pcd])
 
+    # log_dir = "pointnet2_real_data_0827_xyz"
+    # prediction_dir = "eval_labelled_63"
+    # root_path = f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{log_dir}/{prediction_dir}"
+    # file_list = sorted(os.listdir(root_path))
+    # gtpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("gt.pcd")]
+    # predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
+    # for i in range(len(predpcd_file)):
+    #     pcd_f = gtpcd_file[i]
+    #     pcd = o3d.io.read_point_cloud(pcd_f)
+    #     o3d.visualization.draw_geometries([pcd])
+
+    #     pcd_f = predpcd_file[i]
+    #     pcd = o3d.io.read_point_cloud(pcd_f)
+    #     o3d.visualization.draw_geometries([pcd])
+
     # # # # TODO: visualize with different colours
     # cloud_path = "./data_scene/crop_data/cloud"
     # cloud_filename = sorted(os.listdir(cloud_path))
@@ -154,51 +169,6 @@ if __name__ == "__main__":
     # # ori 
     # print((2.484 + 1.885 + 3.12 + 2.62 + 1.742 + 2.046) / 6) 
 
-    # # # TODO: visualize with different colours
-    # rootpath = "./data_plane/rawDataNonPlane"
-    # # loading point cloud
-    # cloud_path = os.path.join(rootpath, "cameraPC")
-    # cloud_filename = sorted(os.listdir(cloud_path))
-    # cloud_files = [os.path.join(cloud_path, filename) for filename in cloud_filename]
-
-    # # loading ground truth label
-    # label_path = os.path.join(rootpath, "cameraLabels")
-    # label_filename = sorted(os.listdir(label_path))
-    # label_files = [os.path.join(label_path, filename) for filename in label_filename]
-    # assert len(cloud_files) == len(label_files)
-
-    # for i in range(len(cloud_files)):
-    #     # load point cloud
-    #     pcd = o3d.io.read_point_cloud(cloud_files[i])
-    #     points_num = np.asarray(pcd.points).shape[0]
-
-    #     # load labels
-    #     labels = np.load(label_files[i])
-
-    #     # paint the point cloud
-    #     plane_colors = np.array([[0.1, 0.1, 0.3]])
-    #     non_plane_colors = np.array([[0.8, 0.2, 0.3]])
-    #     gt_colors = np.repeat(non_plane_colors, points_num, axis=0)
-    #     gt_colors[labels==2] = plane_colors
-    #     pcd.colors = o3d.Vector3dVector(gt_colors)
-    #     o3d.visualization.draw_geometries([pcd])
-    #     break
-
-    # # TODO: visualize with different colours
-    # root_path = "./log/sem_seg/pointnet2_with_nonplanes/visual"
-    # all_filenames = sorted(os.listdir(root_path))
-    # pred_files = [os.path.join(root_path, filename) for filename in all_filenames if filename.endswith("pred.pcd")]
-    # gt_files = [os.path.join(root_path, filename) for filename in all_filenames if filename.endswith("gt.pcd")]
-    # assert len(pred_files ) == len(gt_files)
-
-    # for i in range(2):
-    #     # load point cloud
-    #     gt_pcd = o3d.io.read_point_cloud(gt_files[i])
-    #     o3d.visualization.draw_geometries([gt_pcd])
-
-    #     pred_pcd = o3d.io.read_point_cloud(pred_files[i])
-    #     o3d.visualization.draw_geometries([pred_pcd])
-
     # # TODO: compute the percentage of planes and non-planes (gt)
     # rootpath = "./data_scene/crop_data"
     # label_path = os.path.join(rootpath, "label")
@@ -215,27 +185,6 @@ if __name__ == "__main__":
     #     gt_nonplane_num += labels[labels == 0].shape[0]
     # print(f"plane is {round(gt_plane_num * 100 / (gt_plane_num + gt_nonplane_num), 2)}% of gt label")
     # print(f"non-plane is {round(gt_nonplane_num * 100 / (gt_plane_num + gt_nonplane_num), 2)}% of gt label")
-
-    # # TODO: compute the percentage of planes and non-planes (pred with dataset 2)
-    # folder = "labelled"
-    # epoch = 36
-    # exp_folder = "pointnet2_real_data_0807"
-    # root_folder = f"eval_{folder}_{epoch}"
-    # root_path = os.path.join(f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/{exp_folder}/", root_folder)
-    # file_list = sorted(os.listdir(root_path))
-    # pred_label_files = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.npy")]
-    # # gtpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("gt.pcd")]
-    # # predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
-
-    # pred_plane_num = 0
-    # pred_nonplane_num = 0
-    # for i in range(len(pred_label_files)):
-    #     # load labels
-    #     pred_labels = np.load(pred_label_files[i])
-    #     pred_plane_num += pred_labels[pred_labels == 1].shape[0]
-    #     pred_nonplane_num += pred_labels[pred_labels == 0].shape[0]
-    # print(f"plane is {round(pred_plane_num * 100 / (pred_plane_num + pred_nonplane_num), 2)}% of pred label")
-    # print(f"non-plane is {round(pred_nonplane_num * 100 / (pred_plane_num + pred_nonplane_num), 2)}% of pred label")
 
     # # TODO: build new scene
     # rootpath1 = "./data_synthetic/pcd_plane"

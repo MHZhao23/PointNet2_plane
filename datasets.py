@@ -60,6 +60,10 @@ class RealData(Dataset):
             points = points - np.amin(points, axis=0)[:3]
             if self.rgb:
                 colors = np.asarray(pcd.colors) / 255.0
+                red = colors[:, 2].copy()
+                blue = colors[:, 0].copy()
+                colors[:, 2] = blue
+                colors[:, 0] = red
                 points = np.concatenate((points, colors), axis=1)
 
             # load labels
@@ -192,6 +196,10 @@ class SceneLabelledData():
             points = points - np.amin(points, axis=0)[:3]
             if self.rgb:
                 colors = np.asarray(pcd.colors) / 255.0
+                red = colors[:, 2].copy()
+                blue = colors[:, 0].copy()
+                colors[:, 2] = blue
+                colors[:, 0] = red
                 points = np.concatenate((points, colors), axis=1)
 
             # load labels

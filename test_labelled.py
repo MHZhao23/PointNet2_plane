@@ -172,8 +172,8 @@ def main(args):
             np.save(pred_filename, pred_label)
 
             if args.visual:
-                plane_colors = np.array([[51/255.0, 160/255.0, 44/255.0]])
-                non_plane_colors = np.array([[166/255.0, 206/255.0, 227/255.0]])
+                plane_colors = np.array([[51/255, 160/255, 44/255]])
+                non_plane_colors = np.array([[209/255, 25/255, 25/255]])
 
                 gt_pcd = o3d.geometry.PointCloud()
                 gt_pcd.points = o3d.utility.Vector3dVector(whole_scene_data[:, :3])
