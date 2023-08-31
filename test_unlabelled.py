@@ -82,10 +82,10 @@ def main(args):
     log_string(args)
 
     '''HYPER PARAMETER'''
-    num_classes = 2
-    num_points = args.npoint
-    block_size = args.block_size
-    batch_size = args.batch_size
+    batch_size = 256
+    num_points = 512
+    block_size = 0.2
+    infer_start = time.time()
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     log_string("using {} device.".format(device))
 
@@ -109,8 +109,6 @@ def main(args):
         scene_id = test_scene_set.indices
         num_batches = len(test_scene_set)
         total_time = 0.0
-
-        log_string('---- EVALUATION WHOLE SCENE----')
 
         for batch_idx in range(num_batches):
             print("Inference [%d/%d] %s ..." % (batch_idx + 1, num_batches, str(scene_id[batch_idx])))
@@ -146,28 +144,6 @@ def main(args):
                 batch_point_index_plane = batch_point_index_all[batch_pred_label_all==1]
                 pred_label[batch_point_index_plane] = 1
 
-            # pred_label = np.argmax(vote_label_pool, 1)
-            infer_end = time.time()
-            total_time += (infer_end - infer_start)
-            print("Inference cost: ", infer_end - infer_start)
-
-            # save the label
-            pred_filename = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_pred.npy')
-            np.save(pred_filename, pred_label)
-
-            # save the point cloud
-            plane_colors = np.array([[51/255.0, 160/255.0, 44/255.0]])
-            non_plane_colors = np.array([[166/255.0, 206/255.0, 227/255.0]])
-            pred_pcd = o3d.geometry.PointCloud()
-            pred_pcd.points = o3d.utility.Vector3dVector(whole_scene_data)
-            points_num = whole_scene_data.shape[0]
-            # paint the pred point cloud
-            pred_colors = np.repeat(non_plane_colors, points_num, axis=0)
-            pred_colors[pred_label==1] = plane_colors
-            pred_pcd.colors = o3d.Vector3dVector(pred_colors)
-            # save the point cloud
-            pcd_path = os.path.join(visual_dir, str(scene_id[batch_idx]) + '_pred.pcd')
-            o3d.io.write_point_cloud(pcd_path, pred_pcd)
 
         print("avg time: %f" % (total_time / num_batches))
         print("Done!")

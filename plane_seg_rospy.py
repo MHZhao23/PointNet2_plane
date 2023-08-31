@@ -3,16 +3,17 @@ import sys
 import time
 import argparse
 import logging
+import importlib
 import datetime
 import shutil
 from pathlib import Path
 import numpy as np
-import open3d as o3d
 from tqdm import tqdm
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+import open3d as o3d
 
 
 def SceneUnlabelledData(points, num_classes, num_point, block_size, padding=0.001):
@@ -29,6 +30,7 @@ def SceneUnlabelledData(points, num_classes, num_point, block_size, padding=0.00
     grid_x = int(np.ceil(float(coord_max[0] - coord_min[0] - block_size) / stride) + 1)
     grid_y = int(np.ceil(float(coord_max[1] - coord_min[1] - block_size) / stride) + 1)
     data_scene, index_scene = np.array([]), np.array([])
+    print(coord_min, coord_max, grid_x, grid_y)
     for index_y in range(0, grid_y):
         for index_x in range(0, grid_x):
             s_x = coord_min[0] + index_x * stride
@@ -397,23 +399,20 @@ class get_model(nn.Module):
         x = x.permute(0, 2, 1)
         return x, l3_points
 
-def callback(points):
-    coor_min = np.amin(points, axis=0)
-    points = points - coor_min
-    print("subscribed points: ", points.shape)
+
+def callback(data):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("using {} device.".format(device))
 
     '''MODEL LOADING'''
     num_classes = 2
-    model_dir = "/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/plane_seg/pointnet2_real_data_0827_xyz/checkpoints/best_models/best_model_63.pth"
+    model_dir = "./log/plane_seg/pointnet2_real_data_0827_xyz/checkpoints/best_models/best_model_63.pth"
     classifier = get_model(num_classes).to(device)
-    checkpoint = torch.load(model_dir, map_location=torch.device('cpu'))
+    checkpoint = torch.load(model_dir)
     classifier.load_state_dict(checkpoint['model_state_dict'])
     classifier = classifier.eval()
 
     '''INFERRENCE'''
-    num_votes = 3
     batch_size = 256
     num_points = 512
     block_size = 0.2
@@ -427,10 +426,8 @@ def callback(points):
         s_batch_num = (num_blocks + batch_size - 1) // batch_size
         batch_data = np.zeros((batch_size, num_points, 6))
         batch_point_index = np.zeros((batch_size, num_points), dtype=int)
-        print("num of points: ", points.shape[0], "after grouping: ", scene_data.shape, "num of batches: ", s_batch_num, )
 
         for sbatch in range(s_batch_num):
-            # t0 = time.time()
             start_idx = sbatch * batch_size
             end_idx = min((sbatch + 1) * batch_size, num_blocks)
             real_batch_size = end_idx - start_idx
@@ -440,29 +437,23 @@ def callback(points):
             torch_data = torch.Tensor(batch_data)
             torch_data = torch_data.float().to(device)
             torch_data = torch_data.transpose(2, 1)
-            # t1 = time.time()
-            # t11 = time.time()
             seg_pred, _ = classifier(torch_data)
             t12 = time.time()
             batch_pred_label = seg_pred.contiguous().cpu().data.max(2)[1].numpy()
 
-            # t2 = time.time()
             batch_pred_label_all = batch_pred_label.reshape(-1)
             batch_point_index_all = batch_point_index.reshape(-1)
             batch_pred_label_plane = batch_pred_label_all[batch_pred_label_all==1]
             batch_point_index_plane = batch_point_index_all[batch_pred_label_all==1]
             pred_label[batch_point_index_plane] = 1
-            # t3 = time.time()
-            # nn_time += (t12 - t11)
         infer_end = time.time()
-        # print("NN cost: ", nn_time)
         print("Inference cost: ", infer_end - infer_start)
 
 
-    print(pred_label[pred_label==1].shape)
+    print(pred_label.shape, pred_label[pred_label==1].shape)
     # colors
-    plane_colors = np.array([[51/255.0, 160/255.0, 44/255.0]])
-    non_plane_colors = np.array([[166/255.0, 206/255.0, 227/255.0]])
+    plane_colors = np.array([[51/255, 160/255, 44/255]])
+    non_plane_colors = np.array([[209/255, 25/255, 25/255]])
     pred_pcd = o3d.geometry.PointCloud()
     pred_pcd.points = o3d.utility.Vector3dVector(points)
     points_num = points.shape[0]
@@ -475,11 +466,20 @@ def callback(points):
 
 if __name__ == '__main__':
     # ---------- subscribe ----------
-    root_path = f"./data_scene/crop_testdata/cloud"
-    file_list = os.listdir(root_path)
-    pcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith(".pcd")]
-    for i in range(len(pcd_file)):
-        print(file_list[i])
-        pcd = o3d.io.read_point_cloud(pcd_file[i])
-        points = np.asarray(pcd.points)
-        callback(points)
+    # root_path = f"./data_scene/crop_testdata/cloud"
+    # file_list = os.listdir(root_path)
+    # pcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith(".pcd")]
+    # pcd = o3d.io.read_point_cloud(pcd_file[0])
+    # points = np.asarray(pcd.points)
+    # callback(points)
+
+    # for i in range(len(pcd_file)):
+    #     print(file_list[i])
+    #     pcd = o3d.io.read_point_cloud(pcd_file[i])
+    #     points = np.asarray(pcd.points)
+    #     callback(points)
+
+    pcd = o3d.io.read_point_cloud("./data_scene/TUM/1305031453.374112.pcd")
+    points = np.asarray(pcd.points)
+    print(points.shape)
+    callback(points)

@@ -13,6 +13,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import open3d as o3d
+import matplotlib.pyplot as plt
 
 
 if __name__ == "__main__":
@@ -168,6 +169,50 @@ if __name__ == "__main__":
 
     # # ori 
     # print((2.484 + 1.885 + 3.12 + 2.62 + 1.742 + 2.046) / 6) 
+
+    # TODO: Confusion matrix 
+    print((1.203 + 0.954 + 1.613 + 1.438 + 0.654 + 1.017) / 6)
+    print((0.3321 + 0.2538 + 0.2497 + 0.1564 + 0.2468 + 0.3520) / 6)
+
+    rootpath = "./data_scene/results"
+    label_path = os.path.join(rootpath, "gt")
+    label_filename = sorted(os.listdir(label_path))
+    label_files = [os.path.join(label_path, filename) for filename in label_filename]
+
+    ori_path = os.path.join(rootpath, "ori")
+    ori_filename = sorted(os.listdir(ori_path))
+    ori_files = [os.path.join(ori_path, filename) for filename in ori_filename]
+    assert len(label_files) == len(ori_files)
+    
+    total_num = 0
+    TP, FN, FP, TN = 0, 0, 0, 0
+
+    for i in range(len(label_files)):
+        labels = np.load(label_files[i])
+
+        with open(ori_files[i]) as f:
+            lines = f.readlines()
+        l_labels = [int(l[0]) if int(l[0]) == 0 else 1 for l in lines]
+        preds = np.asarray(l_labels)
+
+        TP += np.sum((labels == 1) & (preds == 1))
+        FN += np.sum((labels == 1) & (preds == 0))
+        FP += np.sum((labels == 0) & (preds == 1))
+        TN += np.sum((labels == 0) & (preds == 0))
+        total_num += labels.shape[0]
+
+    cf = np.array([[round((TN / (total_num * 1.0)), 3), round((FP / (total_num * 1.0)), 3)], 
+                   [round((FN / (total_num * 1.0)), 3), round((TP / (total_num * 1.0)), 3)]])
+    fig, ax = plt.subplots()
+    ax.matshow(cf, cmap=plt.cm.Blues)
+    for i in range(2):
+        for j in range(2):
+            c = cf[i,j]
+            ax.text(j, i, str(c), va='center', ha='center')
+    plt.title('Confusion Matrix')
+    plt.xlabel('Prediction')
+    plt.ylabel('Target')
+    plt.show()
 
     # # TODO: compute the percentage of planes and non-planes (gt)
     # rootpath = "./data_scene/crop_data"

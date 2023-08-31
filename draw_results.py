@@ -100,22 +100,22 @@ if __name__ == '__main__':
         for j in range(2):
             c = cf[i,j]
             ax.text(j, i, str(c), va='center', ha='center')
-    plt.title('Confusion Matrix on the Testing set')
+    plt.title('Confusion Matrix')
     plt.xlabel('Prediction')
     plt.ylabel('Target')
     plt_savepath = save_dir.joinpath("confusion_matrix")
     plt.savefig(plt_savepath)
     plt.show()
 
-    root_path = f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/{args.exp_dir}/{args.log_dir}/{args.prediction_dir}"
-    file_list = sorted(os.listdir(root_path))
-    gtpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("gt.pcd")]
-    predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
-    for i in range(len(predpcd_file)):
-        pcd_f = gtpcd_file[i]
-        pcd = o3d.io.read_point_cloud(pcd_f)
-        o3d.visualization.draw_geometries([pcd])
+    # root_path = f"/home/minghan/workspace/plane_detection_NN/PointNet2_plane/log/{args.exp_dir}/{args.log_dir}/{args.prediction_dir}"
+    # file_list = sorted(os.listdir(root_path))
+    # gtpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("gt.pcd")]
+    # predpcd_file = [os.path.join(root_path, f) for f in file_list if f.endswith("pred.pcd")]
+    # for i in range(len(predpcd_file)):
+    #     pcd_f = gtpcd_file[i]
+    #     pcd = o3d.io.read_point_cloud(pcd_f)
+    #     o3d.visualization.draw_geometries([pcd])
 
-        pcd_f = predpcd_file[i]
-        pcd = o3d.io.read_point_cloud(pcd_f)
-        o3d.visualization.draw_geometries([pcd])
+    #     pcd_f = predpcd_file[i]
+    #     pcd = o3d.io.read_point_cloud(pcd_f)
+    #     o3d.visualization.draw_geometries([pcd])
