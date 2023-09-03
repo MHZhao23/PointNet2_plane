@@ -121,14 +121,14 @@ def sample_and_group(npoint, radius, nsample, xyz, points, returnfps=False):
     """
     B, N, C = xyz.shape
     S = npoint
-    fps_idx = farthest_point_sample(xyz, npoint) # [B, npoint, C]
-    new_xyz = index_points(xyz, fps_idx)
-    idx = query_ball_point(radius, nsample, xyz, new_xyz)
-    grouped_xyz = index_points(xyz, idx) # [B, npoint, nsample, C]
+    fps_idx = farthest_point_sample(xyz, npoint) # sample points from each batch, npoint is the number of points, [B, npoint, C]
+    new_xyz = index_points(xyz, fps_idx) # extract the sampled centriod, [B, npoint, C]
+    idx = query_ball_point(radius, nsample, xyz, new_xyz) # the index of the grouped points
+    grouped_xyz = index_points(xyz, idx) # [B, npoint, nsample, C] # the group of position points
     grouped_xyz_norm = grouped_xyz - new_xyz.view(B, S, 1, C)
 
     if points is not None:
-        grouped_points = index_points(points, idx)
+        grouped_points = index_points(points, idx) # the group of feature points
         new_points = torch.cat([grouped_xyz_norm, grouped_points], dim=-1) # [B, npoint, nsample, C+D]
     else:
         new_points = grouped_xyz_norm
@@ -197,8 +197,8 @@ class PointNetSetAbstraction(nn.Module):
             bn = self.mlp_bns[i]
             new_points =  F.relu(bn(conv(new_points)))
 
-        new_points = torch.max(new_points, 2)[0]
-        new_xyz = new_xyz.permute(0, 2, 1)
+        new_points = torch.max(new_points, 2)[0] # [B, C+D', nsample, npoint] --(max)--> [B, C+D', npoint]
+        new_xyz = new_xyz.permute(0, 2, 1) # [B, C, npoint]
         return new_xyz, new_points
 
 
